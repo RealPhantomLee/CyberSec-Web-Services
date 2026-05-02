@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout | CyberSec Web Services</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <script src="https://js.stripe.com/v3/"></script>
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="logo">CYBERSEC</div>
+            <ul class="nav-links">
+                <li><a href="/">Home</a></li>
+                <li><a href="/services">Services</a></li>
+                <li><a href="/products">Add-Ons</a></li>
+                <li><a href="/blog">Blog</a></li>
+                <li><a href="/admin">Admin</a></li>
+                <li><a href="/checkout" class="nav-cta">Get Started</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <section class="checkout-container">
+        <h2 style="color: var(--white); margin-bottom: 2rem;">Checkout</h2>
+        
+        <div class="checkout-summary" id="checkout-summary">
+            <h3 style="color: var(--lime-yellow); margin-bottom: 1rem;">Order Summary</h3>
+            <div id="checkout-items">
+                <!-- Loaded via JavaScript -->
+            </div>
+            <hr style="border-color: rgba(255,255,255,0.1); margin: 1rem 0;">
+            <div style="display: flex; justify-content: space-between; font-size: 1.2rem; color: var(--white); font-weight: bold;">
+                <span>Total:</span>
+                <span id="checkout-total">$0.00</span>
+            </div>
+        </div>
+
+        <div style="background: var(--dark-gray); padding: 2rem; border-radius: 8px;">
+            <h3 style="color: var(--lime-yellow); margin-bottom: 1rem;">Payment Details</h3>
+            <p style="color: var(--medium-gray); margin-bottom: 1rem;">
+                This is a demo checkout. Configure your Stripe keys in data/config.json to enable real payments.
+            </p>
+            <button class="stripe-button" id="checkout-button">Pay with Stripe</button>
+        </div>
+    </section>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-section">
+                <h4>CyberSec Web Services</h4>
+                <p>Professional cybersecurity and web development services.</p>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 CyberSec Web Services. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="/static/js/main.js"></script>
+    <script src="/static/js/checkout.js"></script>
+</body>
+</html>

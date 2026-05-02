@@ -1,0 +1,46 @@
+{
+  "addons": [
+    {
+      "id": "ssl-cert",
+      "name": "SSL Certificate Setup",
+      "price": 10000,
+      "currency": "cents",
+      "description": "Install and configure SSL/TLS certificates for your website."
+    },
+    {
+      "id": "seo-boost",
+      "name": "SEO Boost Package",
+      "price": 25000,
+      "currency": "cents",
+      "description": "Advanced SEO optimization including schema markup and performance tuning."
+    },
+    {
+      "id": "analytics",
+      "name": "Analytics Dashboard",
+      "price": 15000,
+      "currency": "cents",
+      "description": "Custom analytics dashboard with traffic, conversion, and user behavior tracking."
+    },
+    {
+      "id": "maintenance",
+      "name": "Monthly Maintenance Plan",
+      "price": 5000,
+      "currency": "cents",
+      "description": "Monthly updates, backups, and security patches for your website."
+    },
+    {
+      "id": "contact-forms",
+      "name": "Advanced Contact Forms",
+      "price": 8000,
+      "currency": "cents",
+      "description": "Custom forms with validation, spam protection, and CRM integration."
+    },
+    {
+      "id": "performance",
+      "name": "Performance Optimization",
+      "price": 20000,
+      "currency": "cents",
+      "description": "CDN setup, image optimization, and caching for lightning-fast load times."
+    }
+  ]
+}

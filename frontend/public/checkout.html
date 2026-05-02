@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#141414">
+  <title>Checkout | Phantom Cyber Solutions</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,300;0,400;0,500;0,700;1,400&family=Inter:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./css/style.css">
+  <script src="https://js.stripe.com/v3/"></script>
+</head>
+<body>
+  <div id="crt-overlay"></div>
+  <div id="phantom-cursor"></div>
+
+  <header>
+    <nav>
+      <a href="index.html" class="logo-link">
+        <div class="logo">
+          <span class="logo-phantom glitch" data-text="PHANTOM">PHANTOM</span>
+          <span class="logo-cyber">CYBER</span>
+          <span class="logo-tag">// SOLUTIONS</span>
+        </div>
+      </a>
+      <ul class="nav-links" id="nav-links">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="services.html">Services</a></li>
+        <li><a href="products.html">Add-Ons</a></li>
+        <li><a href="blog.html">Intel</a></li>
+        <li><a href="contact.html">Contact</a></li>
+        <li>
+          <a href="checkout.html" class="nav-cta">
+            Initiate <span class="cart-badge" id="cart-badge"></span>
+          </a>
+        </li>
+      </ul>
+      <button class="nav-hamburger" id="nav-hamburger" aria-label="Toggle navigation" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+    </nav>
+  </header>
+
+  <div class="page-hero">
+    <div class="page-hero-content">
+      <div class="section-tag">// CHECKOUT</div>
+      <h1 class="page-hero-title glitch" data-text="Initiate Mission">Initiate Mission</h1>
+      <p class="page-hero-sub">Review your order and complete payment.</p>
+    </div>
+  </div>
+
+  <section class="checkout-container reveal">
+    <div class="checkout-summary" id="checkout-summary">
+      <h3 style="color:var(--lime-yellow);margin-bottom:1rem;font-family:'JetBrains Mono',monospace;font-size:0.78rem;letter-spacing:2px;text-transform:uppercase;">Order Summary</h3>
+      <div id="checkout-items"></div>
+      <hr style="border-color:rgba(255,255,255,0.07);margin:1rem 0;">
+      <div style="display:flex;justify-content:space-between;font-size:1.2rem;color:var(--white);font-weight:700;">
+        <span>Total:</span>
+        <span id="checkout-total" class="mono">$0.00</span>
+      </div>
+    </div>
+
+    <div style="background:rgba(20,20,20,0.8);padding:2rem;border-radius:6px;border:1px solid rgba(255,255,255,0.06);">
+      <h3 style="color:var(--lime-yellow);margin-bottom:0.75rem;font-family:'JetBrains Mono',monospace;font-size:0.78rem;letter-spacing:2px;text-transform:uppercase;">Payment Details</h3>
+      <p style="color:var(--medium-gray);margin-bottom:1.5rem;font-size:0.85rem;font-family:'JetBrains Mono',monospace;">
+        &gt; Configure Stripe keys in <code>config.json</code> to enable live payments.
+        Need to talk first? <a href="contact.html">Send a message &rarr;</a>
+      </p>
+      <button class="stripe-button" id="checkout-button">COMPLETE MISSION &rarr;</button>
+    </div>
+  </section>
+
+  <footer>
+    <div class="footer-content">
+      <div class="footer-section">
+        <h4>PHANTOM CYBER SOLUTIONS</h4>
+        <p>Security-first. Always.</p>
+      </div>
+      <div class="footer-section">
+        <h4>Navigate</h4>
+        <ul>
+          <li><a href="index.html">Home</a></li>
+          <li><a href="services.html">Services</a></li>
+          <li><a href="products.html">Add-Ons</a></li>
+          <li><a href="blog.html">Intel</a></li>
+          <li><a href="contact.html">Contact</a></li>
+        </ul>
+      </div>
+      <div class="footer-section">
+        <h4>Connect</h4>
+        <ul>
+          <li><a href="contact.html">Contact</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p class="mono">&copy; 2026 Phantom Cyber Solutions &mdash; All rights reserved. // Stay vigilant.</p>
+    </div>
+  </footer>
+
+  <script src="./js/main.js"></script>
+  <script src="./js/checkout.js"></script>
+  <script src="./js/site.js"></script>
+</body>
+</html>

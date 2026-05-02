@@ -1,0 +1,29 @@
+{
+  "site": {
+    "name": "Your Business Name",
+    "tagline": "Your tagline here.",
+    "domain": "yourdomain.com",
+    "port": 8080
+  },
+  "admin": {
+    "username": "your_admin_username",
+    "password_hash": "SHA-256 hash of your password — run: echo -n 'yourpassword' | sha256sum | awk '{print $1}'",
+    "session_seconds": 90
+  },
+  "stripe": {
+    "public_key": "pk_live_YOUR_KEY",
+    "secret_key": "sk_live_YOUR_KEY",
+    "webhook_secret": "whsec_YOUR_SECRET"
+  },
+  "smtp": {
+    "enabled": false,
+    "host": "smtp.gmail.com",
+    "port": 465,
+    "use_ssl": true,
+    "username": "your@gmail.com",
+    "password": "your_gmail_app_password",
+    "from_name": "Your Business Name",
+    "from_email": "your@gmail.com",
+    "admin_email": "your@gmail.com"
+  }
+}
