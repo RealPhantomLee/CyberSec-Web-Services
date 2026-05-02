@@ -1,3 +1,6 @@
+# Private local notes — never commit
+_private/
+
 # Runtime secrets and live data — never commit
 data/config.json
 data/contacts.json
