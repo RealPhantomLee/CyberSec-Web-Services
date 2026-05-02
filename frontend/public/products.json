@@ -1,0 +1,118 @@
+{
+  "addons": [
+    {
+      "id": "ssl-cert",
+      "name": "SSL Certificate Setup",
+      "price": 10000,
+      "currency": "cents",
+      "tagline": "Green padlock. Zero negotiation.",
+      "description": "Full installation and configuration of SSL/TLS certificates for your domain(s). Covers certificate provisioning (Let's Encrypt or commercial CA), server configuration, HTTPS redirect rules, HSTS headers, and mixed-content resolution. Your site goes green across every browser and search engine.",
+      "includes": [
+        "Certificate provisioning (Let's Encrypt or commercial CA)",
+        "Web server configuration (nginx/Apache)",
+        "HTTPS redirect rules",
+        "HSTS header setup",
+        "Mixed-content audit and fix",
+        "Auto-renewal configuration",
+        "Verification and confirmation report"
+      ],
+      "timeline": "1–2 business days"
+    },
+    {
+      "id": "seo-boost",
+      "name": "SEO Boost Package",
+      "price": 25000,
+      "currency": "cents",
+      "tagline": "Show up. Get clicked. Get found.",
+      "description": "Comprehensive on-page and technical SEO optimization that makes search engines actually understand and rank your site. Covers everything from meta tags and schema markup to Core Web Vitals and crawlability — the fundamentals that agencies charge 10x for.",
+      "includes": [
+        "Technical SEO audit (crawl errors, indexing, sitemap)",
+        "Meta title & description optimization for all pages",
+        "Schema markup implementation (LocalBusiness, FAQ, etc.)",
+        "Image alt text and file name optimization",
+        "Internal linking structure review",
+        "Core Web Vitals analysis and optimization",
+        "Google Search Console setup and submission",
+        "robots.txt and sitemap.xml configuration",
+        "30-day follow-up ranking check"
+      ],
+      "timeline": "3–5 business days"
+    },
+    {
+      "id": "analytics",
+      "name": "Analytics Dashboard",
+      "price": 15000,
+      "currency": "cents",
+      "tagline": "Data you can actually use.",
+      "description": "Custom analytics setup with the tracking that matters to your business — traffic sources, conversion events, user paths, and goal completions. Option for privacy-first analytics (Plausible, Fathom) instead of Google Analytics if you want data without feeding the algorithm.",
+      "includes": [
+        "Analytics platform setup (GA4, Plausible, or Fathom)",
+        "Custom event tracking (button clicks, form submits, etc.)",
+        "Goal and conversion tracking configuration",
+        "Traffic source attribution setup",
+        "Custom dashboard with key metrics",
+        "Heatmap integration (optional add-on)",
+        "Monthly report template",
+        "Training session on reading your data"
+      ],
+      "timeline": "2–3 business days"
+    },
+    {
+      "id": "maintenance",
+      "name": "Monthly Maintenance Plan",
+      "price": 5000,
+      "currency": "cents",
+      "tagline": "Your site, always running.",
+      "description": "A hands-off monthly maintenance retainer that keeps your website secure, up-to-date, and performing. Includes dependency updates, security patches, uptime monitoring, and a monthly health report — so you can focus on your business while someone watches the machines.",
+      "includes": [
+        "Dependency and CMS updates (if applicable)",
+        "Security patch monitoring and application",
+        "Monthly automated backup (30-day retention)",
+        "Uptime monitoring with alert notifications",
+        "Monthly performance and security health report",
+        "Minor content update requests (up to 1hr/month)",
+        "Priority email support"
+      ],
+      "timeline": "Ongoing — billed monthly, cancel anytime"
+    },
+    {
+      "id": "contact-forms",
+      "name": "Advanced Contact Forms",
+      "price": 8000,
+      "currency": "cents",
+      "tagline": "Forms that actually convert.",
+      "description": "Custom-built contact and lead capture forms with spam protection, conditional logic, file uploads, and CRM integration. Goes far beyond a basic contact form — think multi-step quote wizards, booking requests, or full intake questionnaires.",
+      "includes": [
+        "Up to 3 custom form designs",
+        "Conditional logic and multi-step flows",
+        "File upload support",
+        "Spam protection (honeypot + rate limiting)",
+        "Email notifications to multiple recipients",
+        "CRM integration (HubSpot, Airtable, Notion, or webhook)",
+        "Submission logging and admin view",
+        "Form analytics (completion rate, drop-off tracking)"
+      ],
+      "timeline": "3–5 business days"
+    },
+    {
+      "id": "performance",
+      "name": "Performance Optimization",
+      "price": 20000,
+      "currency": "cents",
+      "tagline": "Fast is a feature.",
+      "description": "A targeted performance audit and optimization sprint to get your site loading in under 2 seconds. Covers everything from image optimization and lazy loading to CDN setup, caching strategies, and code splitting. Every 100ms of load time costs conversions — this pays for itself.",
+      "includes": [
+        "Full PageSpeed / Lighthouse audit",
+        "Image compression, WebP conversion, and lazy loading",
+        "CDN setup and static asset caching configuration",
+        "Critical CSS extraction and render-blocking fix",
+        "JavaScript bundle analysis and code splitting",
+        "Font loading optimization",
+        "Browser caching headers configuration",
+        "Before/after PageSpeed comparison report",
+        "Web Vitals (LCP, CLS, FID) improvement targeting"
+      ],
+      "timeline": "3–7 business days"
+    }
+  ]
+}

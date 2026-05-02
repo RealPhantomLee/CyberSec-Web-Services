@@ -1,0 +1,153 @@
+{
+  "services": [
+    {
+      "id": "cyber-audit",
+      "name": "Cybersecurity Audit",
+      "tagline": "Know your vulnerabilities before attackers do.",
+      "price": 50000,
+      "currency": "cents",
+      "unit": "per audit",
+      "badge": "MOST REQUESTED",
+      "category": "cybersecurity",
+      "description": "A comprehensive, end-to-end security assessment of your digital infrastructure, web applications, and internal policies. We probe every layer of your stack — network, application, and human — and deliver a prioritized remediation roadmap so you know exactly what to fix and in what order.",
+      "features": [
+        "External network vulnerability scan (CVSS-scored)",
+        "Web application penetration testing (OWASP Top 10)",
+        "Open port & service enumeration",
+        "SSL/TLS certificate & configuration review",
+        "DNS security analysis (SPF, DKIM, DMARC)",
+        "Credential exposure check (dark web lookups)",
+        "Security policy & access control review",
+        "Social engineering risk assessment",
+        "Detailed executive summary report",
+        "Technical remediation guide with priority tiers"
+      ],
+      "deliverables": [
+        "Executive summary (non-technical overview)",
+        "Full technical vulnerability report (CVSS-scored findings)",
+        "Prioritized remediation roadmap",
+        "30-minute debrief call to walk through findings"
+      ],
+      "timeline": "5–10 business days",
+      "ideal_for": [
+        "Businesses handling customer data",
+        "Startups preparing for launch or funding rounds",
+        "Companies that have never had a formal security review",
+        "Organizations recovering from an incident"
+      ]
+    },
+    {
+      "id": "web-creation",
+      "name": "Custom Website",
+      "tagline": "Built from scratch. Built to perform. Built to last.",
+      "price": 150000,
+      "currency": "cents",
+      "unit": "per project",
+      "badge": "",
+      "category": "web",
+      "description": "A fully custom website designed and developed around your brand, your goals, and your users. No templates. No page builders. Clean, semantic code that performs at the top of search rankings and converts visitors into clients. Includes 12 months of support and hosting guidance.",
+      "features": [
+        "Custom design aligned to your brand identity",
+        "Fully responsive — mobile, tablet, desktop",
+        "Semantic HTML5, modern CSS, vanilla JS (no bloated frameworks)",
+        "SEO-optimized structure (meta, schema markup, sitemap)",
+        "Google PageSpeed score 90+ target",
+        "Contact forms with spam protection",
+        "Analytics integration (GA4 or privacy-first alternative)",
+        "SSL setup and security hardening",
+        "12 months of bug-fix support included",
+        "Full source code ownership — no vendor lock-in"
+      ],
+      "deliverables": [
+        "Complete website deployed to your hosting",
+        "Full source code repository (GitHub)",
+        "DNS configuration guide",
+        "1-hour handoff call with training",
+        "12-month support via email"
+      ],
+      "timeline": "2–4 weeks depending on scope",
+      "ideal_for": [
+        "Service-based businesses needing a professional online presence",
+        "Freelancers and consultants replacing a dated site",
+        "Startups that need something fast, clean, and credible",
+        "Anyone tired of paying monthly fees for a Wix/Squarespace site they don't own"
+      ]
+    },
+    {
+      "id": "security-consulting",
+      "name": "Security Consulting",
+      "tagline": "An expert in your corner every month — not just once.",
+      "price": 15000,
+      "currency": "cents",
+      "unit": "per month",
+      "badge": "RETAINER",
+      "category": "cybersecurity",
+      "description": "Ongoing security advisory and monitoring for businesses that want proactive protection rather than reactive damage control. You get a dedicated security expert available on retainer — reviewing infrastructure changes, answering team questions, training staff, and staying ahead of emerging threats.",
+      "features": [
+        "Monthly security review of infrastructure changes",
+        "Incident response planning and runbook creation",
+        "Staff security awareness training (quarterly)",
+        "Threat intelligence briefings (monthly report)",
+        "Review of new third-party integrations & vendors",
+        "Password and credential policy oversight",
+        "Compliance guidance (SOC 2, HIPAA, GDPR basics)",
+        "On-call Slack/email access (4 business hour response)",
+        "Emergency incident support (2 hours included)",
+        "Priority pricing on additional audits or projects"
+      ],
+      "deliverables": [
+        "Monthly security health report",
+        "Updated threat model for your organization",
+        "Incident response runbook (created in month 1)",
+        "Training materials and security policy templates"
+      ],
+      "timeline": "Ongoing — minimum 3-month engagement",
+      "ideal_for": [
+        "Small businesses without a dedicated security team",
+        "Regulated industries (healthcare, finance, legal)",
+        "Companies scaling rapidly and onboarding new vendors",
+        "Organizations that have experienced past incidents"
+      ]
+    },
+    {
+      "id": "ecommerce-site",
+      "name": "E-Commerce Website",
+      "tagline": "A store that sells while you sleep.",
+      "price": 250000,
+      "currency": "cents",
+      "unit": "per project",
+      "badge": "FULL-STACK",
+      "category": "web",
+      "description": "A complete, production-ready online store with secure payment processing, inventory management, and a conversion-optimized checkout flow. Built with performance and security as first principles — your customers' data is protected and your store loads fast on any device.",
+      "features": [
+        "Custom storefront design (no templates)",
+        "Product catalog with variants (size, color, etc.)",
+        "Stripe and PayPal payment integration",
+        "PCI-DSS compliant checkout flow",
+        "Inventory management with low-stock alerts",
+        "Order management dashboard",
+        "Customer account portal",
+        "Email order confirmations and shipping updates",
+        "Discount code and coupon system",
+        "Sales analytics and reporting",
+        "SEO-optimized product pages",
+        "Mobile-first responsive design"
+      ],
+      "deliverables": [
+        "Fully deployed e-commerce store",
+        "Admin dashboard for order & inventory management",
+        "Payment gateway setup and testing",
+        "Full source code and documentation",
+        "1-hour handoff training call",
+        "30-day post-launch support"
+      ],
+      "timeline": "4–8 weeks depending on catalog size",
+      "ideal_for": [
+        "Physical product businesses moving online",
+        "Creators selling digital products or courses",
+        "Service businesses adding a booking or payment flow",
+        "Anyone who needs a store they own, not rent"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "site": {
+    "name": "Phantom Cyber Solutions",
+    "tagline": "Security-first. Always."
+  },
+  "stripe": {
+    "public_key": "pk_test_YOUR_KEY_HERE"
+  }
+}

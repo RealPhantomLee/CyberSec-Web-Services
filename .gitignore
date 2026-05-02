@@ -1,0 +1,21 @@
+# Runtime secrets and live data — never commit
+data/config.json
+data/contacts.json
+data/payments.json
+
+# Compiled artifacts
+backend/build/
+
+# Private deployment notes
+HANDOFF.md
+
+# Deployed admin page (obscured filename — use frontend/pages/admin.html as template)
+frontend/public/h4nt3dh0u53.html
+
+# OS / editor noise
+.DS_Store
+Thumbs.db
+*.swp
+*~
+.vscode/
+.idea/

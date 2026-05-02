@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard | CyberSec Web Services</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="logo">CYBERSEC</div>
+            <ul class="nav-links">
+                <li><a href="/">Home</a></li>
+                <li><a href="/admin">Dashboard</a></li>
+                <li><a href="#" id="logout-btn" style="color: var(--lime-yellow);">Logout</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <!-- Login Form (shown if not authenticated) -->
+    <div id="login-section" class="admin-container" style="max-width: 500px;">
+        <h2 style="color: var(--white); margin-bottom: 2rem;">Admin Login</h2>
+        <div class="admin-section">
+            <div class="form-group">
+                <label>Username</label>
+                <input type="text" id="login-username" value="admin">
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" id="login-password" placeholder="Enter password">
+            </div>
+            <button class="stripe-button" id="login-btn" style="width: 100%;">Login</button>
+            <p id="login-error" style="color: #ff4444; margin-top: 1rem; display: none;">Invalid credentials</p>
+        </div>
+    </div>
+
+    <!-- Dashboard (shown if authenticated) -->
+    <div id="dashboard-section" style="display: none;">
+        <div class="admin-container">
+            <h2 style="color: var(--white); margin-bottom: 2rem;">Admin Dashboard</h2>
+            
+            <!-- Stats -->
+            <div class="admin-stats" id="admin-stats">
+                <!-- Loaded via JS -->
+            </div>
+
+            <!-- Blog Management -->
+            <div class="admin-section">
+                <h3>Create New Blog Post</h3>
+                <div class="form-group">
+                    <label>Post ID</label>
+                    <input type="text" id="post-id" placeholder="e.g., my-new-post">
+                </div>
+                <div class="form-group">
+                    <label>Title</label>
+                    <input type="text" id="post-title" placeholder="Post title">
+                </div>
+                <div class="form-group">
+                    <label>Date</label>
+                    <input type="date" id="post-date">
+                </div>
+                <div class="form-group">
+                    <label>Category</label>
+                    <select id="post-category">
+                        <option value="general">General</option>
+                        <option value="cybersecurity">Cybersecurity</option>
+                        <option value="web-development">Web Development</option>
+                        <option value="announcement">Announcement</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Excerpt</label>
+                    <textarea id="post-excerpt" rows="2" placeholder="Short summary"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Content</label>
+                    <textarea id="post-content" rows="6" placeholder="Full blog post content"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="post-published" checked> Publish immediately
+                    </label>
+                </div>
+                <button class="stripe-button" id="create-post-btn" style="width: 100%;">Create Post</button>
+                <p id="post-message" style="margin-top: 1rem;"></p>
+            </div>
+
+            <!-- Existing Posts -->
+            <div class="admin-section">
+                <h3>Existing Posts</h3>
+                <div id="existing-posts">
+                    <!-- Loaded via JS -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-section">
+                <h4>CyberSec Web Services</h4>
+                <p>Admin Dashboard</p>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 CyberSec Web Services. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="/static/js/main.js"></script>
+    <script src="/static/js/admin.js"></script>
+</body>
+</html>

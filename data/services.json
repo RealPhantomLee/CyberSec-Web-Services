@@ -1,0 +1,60 @@
+{
+  "services": [
+    {
+      "id": "cyber-audit",
+      "name": "Cybersecurity Audit",
+      "price": 50000,
+      "currency": "cents",
+      "description": "Comprehensive security assessment of your infrastructure, applications, and policies.",
+      "features": [
+        "Network vulnerability scanning",
+        "Penetration testing",
+        "Security policy review",
+        "Detailed remediation report"
+      ],
+      "category": "cybersecurity"
+    },
+    {
+      "id": "web-creation",
+      "name": "Custom Website Creation",
+      "price": 150000,
+      "currency": "cents",
+      "description": "Full-stack website development tailored to your business needs.",
+      "features": [
+        "Responsive design",
+        "SEO optimization",
+        "Contact forms & integrations",
+        "1 year of support included"
+      ],
+      "category": "web"
+    },
+    {
+      "id": "security-consulting",
+      "name": "Security Consulting",
+      "price": 15000,
+      "currency": "cents",
+      "description": "Ongoing security advisory services for your team.",
+      "features": [
+        "Monthly security reviews",
+        "Incident response planning",
+        "Team training sessions",
+        "Compliance guidance"
+      ],
+      "category": "cybersecurity"
+    },
+    {
+      "id": "ecommerce-site",
+      "name": "E-Commerce Website",
+      "price": 250000,
+      "currency": "cents",
+      "description": "Full-featured online store with payment processing and inventory management.",
+      "features": [
+        "Product catalog & cart",
+        "Stripe/PayPal integration",
+        "Order management dashboard",
+        "Inventory tracking"
+      ],
+      "category": "web"
+    }
+  ]
+}
