@@ -29,13 +29,13 @@ FetchContent_MakeAvailable(nlohmann_json)
 find_package(OpenSSL REQUIRED)
 find_package(CURL    REQUIRED)
 
-add_executable(phantom-server src/main.cpp)
+add_executable(cybersec-server src/main.cpp)
 
-target_include_directories(phantom-server PRIVATE
+target_include_directories(cybersec-server PRIVATE
   ${httplib_SOURCE_DIR}
 )
 
-target_link_libraries(phantom-server PRIVATE
+target_link_libraries(cybersec-server PRIVATE
   nlohmann_json::nlohmann_json
   OpenSSL::SSL
   OpenSSL::Crypto
@@ -44,7 +44,7 @@ target_link_libraries(phantom-server PRIVATE
 )
 
 # Copy runtime assets to build directory after compile
-add_custom_command(TARGET phantom-server POST_BUILD
+add_custom_command(TARGET cybersec-server POST_BUILD
   COMMAND ${CMAKE_COMMAND} -E copy_directory
     ${CMAKE_SOURCE_DIR}/../data    ${CMAKE_BINARY_DIR}/data
   COMMAND ${CMAKE_COMMAND} -E copy_directory

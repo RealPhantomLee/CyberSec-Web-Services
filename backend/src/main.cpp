@@ -3,6 +3,7 @@
 #include <openssl/evp.h>
 #include <openssl/hmac.h>
 #include <openssl/rand.h>
+#include <openssl/sha.h>
 #include "email.hpp"
 
 #include <iostream>
@@ -109,22 +110,69 @@ static bool is_rate_limited(
 }
 
 static std::string client_ip(const Request& req) {
-    std::string cf = req.get_header_value("CF-Connecting-IP");
-    if (!cf.empty()) return cf;
-    std::string xff = req.get_header_value("X-Forwarded-For");
-    if (!xff.empty()) return xff.substr(0, xff.find(','));
+    // Only trust Cloudflare headers when the connection comes from localhost
+    // (i.e., the cloudflared tunnel process). This prevents LAN clients from
+    // spoofing CF-Connecting-IP to bypass rate limiting.
+    bool from_loopback = (req.remote_addr == "127.0.0.1" || req.remote_addr == "::1");
+    if (from_loopback) {
+        std::string cf = req.get_header_value("CF-Connecting-IP");
+        if (!cf.empty()) return cf;
+        std::string xff = req.get_header_value("X-Forwarded-For");
+        if (!xff.empty()) return xff.substr(0, xff.find(','));
+    }
     return req.remote_addr;
 }
 
-// ── SHA-256 ───────────────────────────────────────────────────────────────────
+// ── Password hashing (PBKDF2-SHA256) ─────────────────────────────────────────
+// Stored format: "pbkdf2:<salt_hex>:<hash_hex>"
+// Legacy format (unsalted SHA-256): bare 64-char hex — still verified for
+// backward compatibility but new hashes should use PBKDF2.
 
-static std::string sha256(const std::string& s) {
+static std::string to_hex(const unsigned char* buf, int len) {
+    char out[len * 2 + 1];
+    for (int i = 0; i < len; ++i) snprintf(out + i * 2, 3, "%02x", buf[i]);
+    out[len * 2] = '\0';
+    return out;
+}
+
+static std::string sha256_hex(const std::string& s) {
     unsigned char hash[SHA256_DIGEST_LENGTH];
     SHA256(reinterpret_cast<const unsigned char*>(s.c_str()), s.size(), hash);
-    char hex[65] = {};
-    for (int i = 0; i < SHA256_DIGEST_LENGTH; ++i)
-        snprintf(hex + i * 2, 3, "%02x", hash[i]);
-    return hex;
+    return to_hex(hash, SHA256_DIGEST_LENGTH);
+}
+
+static std::string pbkdf2_hash(const std::string& password, const std::string& salt_hex) {
+    // Decode hex salt back to bytes
+    std::vector<unsigned char> salt(salt_hex.size() / 2);
+    for (size_t i = 0; i < salt.size(); ++i) {
+        unsigned int byte;
+        sscanf(salt_hex.c_str() + i * 2, "%02x", &byte);
+        salt[i] = static_cast<unsigned char>(byte);
+    }
+    unsigned char dk[32];
+    PKCS5_PBKDF2_HMAC(password.c_str(), (int)password.size(),
+                      salt.data(), (int)salt.size(),
+                      200000, EVP_sha256(), sizeof(dk), dk);
+    return to_hex(dk, sizeof(dk));
+}
+
+static std::string new_pbkdf2_hash(const std::string& password) {
+    unsigned char salt_bytes[16];
+    RAND_bytes(salt_bytes, sizeof(salt_bytes));
+    std::string salt_hex = to_hex(salt_bytes, sizeof(salt_bytes));
+    return "pbkdf2:" + salt_hex + ":" + pbkdf2_hash(password, salt_hex);
+}
+
+static bool verify_password(const std::string& password, const std::string& stored) {
+    if (stored.substr(0, 7) == "pbkdf2:") {
+        auto p1 = stored.find(':', 7);
+        if (p1 == std::string::npos) return false;
+        std::string salt_hex = stored.substr(7, p1 - 7);
+        std::string expected = stored.substr(p1 + 1);
+        return pbkdf2_hash(password, salt_hex) == expected;
+    }
+    // Legacy: bare unsalted SHA-256
+    return sha256_hex(password) == stored;
 }
 
 // ── JSON helpers ──────────────────────────────────────────────────────────────
@@ -251,7 +299,9 @@ int main() {
         return 1;
     }
 
-    SESSION_SECONDS = config["admin"].value("session_seconds", 90);
+    int dur_hours = config["admin"].value("session_duration_hours", 0);
+    SESSION_SECONDS = dur_hours > 0 ? dur_hours * 3600
+                                    : config["admin"].value("session_seconds", 3600);
     SmtpConfig smtp      = load_smtp(config);
     std::string adm_user = config["admin"].value("username",      "admin");
     std::string adm_hash = config["admin"].value("password_hash", "");
@@ -349,13 +399,13 @@ int main() {
         catch (...) { return json_err(res, 400, "Invalid request body."); }
 
         if (body.value("username","") == adm_user &&
-            sha256(body.value("password","")) == adm_hash)
+            verify_password(body.value("password",""), adm_hash))
         {
             std::string tok = create_session();
             res.set_header("Set-Cookie",
                 "admin_session=" + tok
                 + "; Path=/; Max-Age=" + std::to_string(SESSION_SECONDS)
-                + "; SameSite=Strict; HttpOnly");
+                + "; SameSite=Strict; HttpOnly; Secure");
             json_ok(res, {{"success", true}});
         } else {
             json_err(res, 401, "Invalid credentials.");
@@ -471,6 +521,20 @@ int main() {
         if (!items.is_array() || items.empty())
             return json_err(res, 400, "Cart is empty.");
 
+        // Authoritative server-side price list — never trust client-supplied prices
+        static const std::unordered_map<std::string,int> PRICE_LIST = {
+            {"cyber-audit",          50000},
+            {"web-creation",        150000},
+            {"security-consulting",  15000},
+            {"ecommerce-site",      250000},
+            {"ssl-cert",             10000},
+            {"seo-boost",            25000},
+            {"analytics",            15000},
+            {"maintenance",           5000},
+            {"contact-forms",         8000},
+            {"performance",          20000},
+        };
+
         // Build URL-encoded Stripe form body (values only, not bracket keys)
         std::string form;
         auto append_field = [&](const std::string& key, const std::string& val) {
@@ -481,10 +545,14 @@ int main() {
         };
 
         for (size_t i = 0; i < items.size(); ++i) {
+            std::string id = items[i].value("id", "");
+            auto it = PRICE_LIST.find(id);
+            if (it == PRICE_LIST.end())
+                return json_err(res, 400, "Unknown item: " + id);
             std::string p = "line_items[" + std::to_string(i) + "]";
             append_field(p + "[price_data][currency]",           "usd");
             append_field(p + "[price_data][product_data][name]", items[i].value("name", "Item"));
-            append_field(p + "[price_data][unit_amount]",        std::to_string(items[i].value("price", 0)));
+            append_field(p + "[price_data][unit_amount]",        std::to_string(it->second));
             append_field(p + "[quantity]",                       "1");
         }
         append_field("mode",        "payment");
@@ -597,6 +665,25 @@ int main() {
                   << "Run the server from the build directory.\n";
         return 1;
     }
+
+    // Security headers on every response
+    svr.set_post_routing_handler([](const Request&, Response& res) {
+        res.set_header("X-Content-Type-Options",  "nosniff");
+        res.set_header("X-Frame-Options",         "SAMEORIGIN");
+        res.set_header("Referrer-Policy",         "strict-origin-when-cross-origin");
+        res.set_header("Permissions-Policy",      "camera=(), microphone=(), geolocation=()");
+        res.set_header("Strict-Transport-Security","max-age=31536000; includeSubDomains");
+        res.set_header("Content-Security-Policy",
+            "default-src 'self'; "
+            "script-src 'self' https://js.stripe.com 'unsafe-inline'; "
+            "style-src 'self' https://fonts.googleapis.com 'unsafe-inline'; "
+            "font-src 'self' https://fonts.gstatic.com; "
+            "connect-src 'self'; "
+            "frame-src https://js.stripe.com; "
+            "img-src 'self' data:; "
+            "object-src 'none'; "
+            "base-uri 'self'");
+    });
 
     // Custom 404
     svr.set_error_handler([](const Request&, Response& res) {

@@ -1,114 +1,708 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard | CyberSec Web Services</title>
-    <link rel="stylesheet" href="/static/css/style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#141414">
+  <title>Admin | Phantom Cyber Solutions</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,300;0,400;0,500;0,700;1,400&family=Inter:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./css/style.css">
+  <style>
+    /* ── Admin Layout ─────────────────────────────────────── */
+    .admin-shell {
+      display: grid;
+      grid-template-columns: 220px 1fr;
+      min-height: 100vh;
+      padding-top: 60px;
+    }
+    .admin-sidebar {
+      background: rgba(8,8,8,0.95);
+      border-right: 1px solid rgba(226,232,0,0.1);
+      padding: 2rem 0;
+      position: sticky;
+      top: 60px;
+      height: calc(100vh - 60px);
+      overflow-y: auto;
+    }
+    .admin-sidebar-title {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.62rem;
+      color: rgba(226,232,0,0.35);
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      padding: 0 1.5rem 1rem;
+    }
+    .admin-nav-item {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.85rem 1.5rem;
+      cursor: pointer;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.78rem;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--medium-gray);
+      transition: all 0.2s;
+      border-left: 2px solid transparent;
+      user-select: none;
+    }
+    .admin-nav-item:hover { color: var(--lime-yellow); background: rgba(226,232,0,0.03); }
+    .admin-nav-item.active {
+      color: var(--lime-yellow);
+      border-left-color: var(--lime-yellow);
+      background: rgba(226,232,0,0.05);
+    }
+    .admin-nav-num { color: rgba(226,232,0,0.3); font-size: 0.65rem; }
+    .admin-sidebar-sep {
+      border: none;
+      border-top: 1px solid rgba(255,255,255,0.05);
+      margin: 1rem 1.5rem;
+    }
+    .admin-logout-btn {
+      display: block;
+      width: calc(100% - 3rem);
+      margin: 1rem 1.5rem 0;
+      padding: 0.6rem;
+      background: transparent;
+      border: 1px solid rgba(255,60,60,0.3);
+      border-radius: 3px;
+      color: rgba(255,100,100,0.7);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.72rem;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .admin-logout-btn:hover { border-color: rgba(255,60,60,0.7); color: #ff6464; }
+
+    /* ── Main Content ────────────────────────────────────────── */
+    .admin-content {
+      padding: 2rem 2.5rem;
+      overflow-y: auto;
+    }
+    .admin-tab { display: none; }
+    .admin-tab.active { display: block; }
+
+    .admin-page-title {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem;
+      color: rgba(226,232,0,0.45);
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      margin-bottom: 0.4rem;
+    }
+    .admin-page-h {
+      font-size: 1.7rem;
+      font-weight: 700;
+      color: var(--white);
+      margin-bottom: 0.3rem;
+    }
+    .admin-page-sub {
+      font-size: 0.85rem;
+      color: var(--medium-gray);
+      margin-bottom: 2rem;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* ── Stat Grid ───────────────────────────────────────────── */
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+    .stat-card {
+      background: rgba(30,30,30,0.8);
+      border: 1px solid rgba(255,255,255,0.05);
+      border-radius: 6px;
+      padding: 1.25rem;
+    }
+    .stat-card:hover { border-color: rgba(226,232,0,0.15); }
+    .stat-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.65rem;
+      color: var(--medium-gray);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 0.4rem;
+    }
+    .stat-value {
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--lime-yellow);
+      font-family: 'JetBrains Mono', monospace;
+      line-height: 1;
+    }
+    .stat-delta {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.65rem;
+      margin-top: 0.3rem;
+    }
+    .delta-up   { color: #4ade80; }
+    .delta-down { color: #f87171; }
+    .delta-flat { color: var(--medium-gray); }
+
+    /* ── Section Panels ──────────────────────────────────────── */
+    .panel {
+      background: rgba(20,20,20,0.7);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 6px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+    .panel-title {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.72rem;
+      color: var(--lime-yellow);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 1.2rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 1px solid rgba(226,232,0,0.1);
+    }
+
+    /* ── Traffic Table ───────────────────────────────────────── */
+    .traffic-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.8rem;
+    }
+    .traffic-table th {
+      color: rgba(226,232,0,0.5);
+      font-size: 0.65rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      text-align: left;
+      padding: 0.5rem 0.75rem;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+    .traffic-table td {
+      padding: 0.65rem 0.75rem;
+      color: var(--light-gray);
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+    }
+    .traffic-table tr:last-child td { border-bottom: none; }
+    .traffic-bar-wrap { display: flex; align-items: center; gap: 0.75rem; }
+    .traffic-bar {
+      height: 4px;
+      background: rgba(226,232,0,0.9);
+      border-radius: 2px;
+      min-width: 2px;
+    }
+    .traffic-bar-bg {
+      flex: 1;
+      height: 4px;
+      background: rgba(255,255,255,0.06);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+    /* ── Activity Log ────────────────────────────────────────── */
+    .log-entry {
+      display: flex;
+      gap: 1rem;
+      align-items: flex-start;
+      padding: 0.6rem 0;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+    }
+    .log-entry:last-child { border-bottom: none; }
+    .log-time { color: rgba(151,151,151,0.5); white-space: nowrap; font-size: 0.68rem; }
+    .log-event { color: var(--light-gray); }
+    .log-tag {
+      font-size: 0.6rem;
+      padding: 0.15rem 0.5rem;
+      border-radius: 2px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      flex-shrink: 0;
+    }
+    .log-tag-visit   { background: rgba(74,222,128,0.1);  color: #4ade80; }
+    .log-tag-admin   { background: rgba(226,232,0,0.1);   color: var(--lime-yellow); }
+    .log-tag-system  { background: rgba(100,100,255,0.1); color: #818cf8; }
+
+    /* ── System Status ───────────────────────────────────────── */
+    .status-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.65rem 0;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+      font-size: 0.85rem;
+    }
+    .status-row:last-child { border-bottom: none; }
+    .status-label { font-family: 'JetBrains Mono', monospace; font-size: 0.78rem; color: var(--light-gray); }
+    .status-badge {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.65rem;
+      padding: 0.2rem 0.65rem;
+      border-radius: 2px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+    .badge-green  { background: rgba(74,222,128,0.12); color: #4ade80; border: 1px solid rgba(74,222,128,0.2); }
+    .badge-yellow { background: rgba(226,232,0,0.1);   color: var(--lime-yellow); border: 1px solid rgba(226,232,0,0.2); }
+    .badge-red    { background: rgba(248,113,113,0.1); color: #f87171; border: 1px solid rgba(248,113,113,0.2); }
+    .badge-gray   { background: rgba(151,151,151,0.1); color: var(--medium-gray); border: 1px solid rgba(151,151,151,0.2); }
+
+    /* ── Controls / Toggles ──────────────────────────────────── */
+    .toggle-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 0;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+    }
+    .toggle-row:last-child { border-bottom: none; }
+    .toggle-info h4 { font-size: 0.9rem; color: var(--white); margin-bottom: 0.2rem; font-family: 'JetBrains Mono', monospace; }
+    .toggle-info p  { font-size: 0.78rem; color: var(--medium-gray); }
+    .toggle-switch {
+      position: relative;
+      width: 44px; height: 22px;
+      flex-shrink: 0;
+    }
+    .toggle-switch input { opacity: 0; width: 0; height: 0; }
+    .toggle-slider {
+      position: absolute;
+      inset: 0;
+      background: rgba(151,151,151,0.2);
+      border-radius: 22px;
+      cursor: pointer;
+      transition: background 0.2s;
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+    .toggle-slider::before {
+      content: '';
+      position: absolute;
+      width: 16px; height: 16px;
+      left: 2px; top: 2px;
+      background: var(--medium-gray);
+      border-radius: 50%;
+      transition: all 0.2s;
+    }
+    .toggle-switch input:checked + .toggle-slider { background: rgba(226,232,0,0.25); border-color: rgba(226,232,0,0.4); }
+    .toggle-switch input:checked + .toggle-slider::before { transform: translateX(22px); background: var(--lime-yellow); }
+
+    /* ── Post List ───────────────────────────────────────────── */
+    .post-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      padding: 1rem 0;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      gap: 1rem;
+    }
+    .post-item:last-child { border-bottom: none; }
+    .post-meta h4 { color: var(--white); font-size: 0.9rem; margin-bottom: 0.25rem; }
+    .post-meta span { font-family: 'JetBrains Mono', monospace; font-size: 0.68rem; color: var(--medium-gray); }
+    .post-actions { display: flex; gap: 0.5rem; flex-shrink: 0; }
+    .btn-sm {
+      padding: 0.35rem 0.75rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.68rem;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      border-radius: 3px;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s;
+    }
+    .btn-publish { background: rgba(226,232,0,0.15); color: var(--lime-yellow); border: 1px solid rgba(226,232,0,0.25); }
+    .btn-publish:hover { background: rgba(226,232,0,0.25); }
+    .btn-delete  { background: rgba(248,113,113,0.1);  color: #f87171;  border: 1px solid rgba(248,113,113,0.2); }
+    .btn-delete:hover { background: rgba(248,113,113,0.2); }
+
+    /* ── Quick Actions ───────────────────────────────────────── */
+    .quick-actions { display: flex; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 1.5rem; }
+    .qa-btn {
+      padding: 0.55rem 1rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.72rem;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      border-radius: 3px;
+      cursor: pointer;
+      background: rgba(68,68,68,0.5);
+      border: 1px solid rgba(255,255,255,0.1);
+      color: var(--light-gray);
+      transition: all 0.2s;
+    }
+    .qa-btn:hover { border-color: rgba(226,232,0,0.3); color: var(--lime-yellow); }
+
+    /* ── Settings Inputs ─────────────────────────────────────── */
+    .settings-note {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.72rem;
+      color: rgba(226,232,0,0.45);
+      background: rgba(226,232,0,0.04);
+      border: 1px solid rgba(226,232,0,0.1);
+      border-radius: 3px;
+      padding: 0.75rem 1rem;
+      margin-bottom: 1.2rem;
+    }
+
+    @media (max-width: 768px) {
+      .admin-shell { grid-template-columns: 1fr; }
+      .admin-sidebar { position: relative; top: 0; height: auto; }
+    }
+  </style>
 </head>
 <body>
-    <header>
-        <nav>
-            <div class="logo">CYBERSEC</div>
-            <ul class="nav-links">
-                <li><a href="/">Home</a></li>
-                <li><a href="/admin">Dashboard</a></li>
-                <li><a href="#" id="logout-btn" style="color: var(--lime-yellow);">Logout</a></li>
-            </ul>
-        </nav>
-    </header>
 
-    <!-- Login Form (shown if not authenticated) -->
-    <div id="login-section" class="admin-container" style="max-width: 500px;">
-        <h2 style="color: var(--white); margin-bottom: 2rem;">Admin Login</h2>
-        <div class="admin-section">
-            <div class="form-group">
-                <label>Username</label>
-                <input type="text" id="login-username" value="admin">
-            </div>
-            <div class="form-group">
-                <label>Password</label>
-                <input type="password" id="login-password" placeholder="Enter password">
-            </div>
-            <button class="stripe-button" id="login-btn" style="width: 100%;">Login</button>
-            <p id="login-error" style="color: #ff4444; margin-top: 1rem; display: none;">Invalid credentials</p>
+  <div id="crt-overlay"></div>
+  <div id="phantom-cursor"></div>
+
+  <header>
+    <nav>
+      <a href="index.html" class="logo-link">
+        <div class="logo">
+          <span class="logo-phantom">PHANTOM</span>
+          <span class="logo-cyber">CYBER</span>
+          <span class="logo-tag">// SOLUTIONS</span>
         </div>
+      </a>
+      <ul class="nav-links">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="services.html">Services</a></li>
+        <li><a href="checkout.html" class="nav-cta">Initiate &rarr;</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <!-- ─── LOGIN FORM ────────────────────────────────────────────────────── -->
+  <div id="login-section" style="display:flex;align-items:center;justify-content:center;min-height:100vh;">
+    <div style="width:100%;max-width:460px;padding:2rem;">
+      <div class="admin-page-title" style="text-align:center;">&gt; SECURE ACCESS PORTAL</div>
+      <div class="panel" style="margin-top:1rem;">
+        <div class="panel-title">Authentication Required</div>
+        <div class="form-group">
+          <label>Username</label>
+          <input type="text" id="login-username" autocomplete="username">
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <input type="password" id="login-password" autocomplete="current-password">
+        </div>
+        <button class="cta-button" id="login-btn" style="width:100%;margin-top:0.5rem;">ACCESS DASHBOARD</button>
+        <p id="login-error" style="color:#f87171;margin-top:0.75rem;font-family:'JetBrains Mono',monospace;font-size:0.78rem;display:none;">&gt; Access denied. Invalid credentials.</p>
+      </div>
     </div>
+  </div>
 
-    <!-- Dashboard (shown if authenticated) -->
-    <div id="dashboard-section" style="display: none;">
-        <div class="admin-container">
-            <h2 style="color: var(--white); margin-bottom: 2rem;">Admin Dashboard</h2>
-            
-            <!-- Stats -->
-            <div class="admin-stats" id="admin-stats">
-                <!-- Loaded via JS -->
-            </div>
+  <!-- ─── DASHBOARD ─────────────────────────────────────────────────────── -->
+  <div id="dashboard-section" style="display:none;">
+    <div class="admin-shell">
 
-            <!-- Blog Management -->
-            <div class="admin-section">
-                <h3>Create New Blog Post</h3>
-                <div class="form-group">
-                    <label>Post ID</label>
-                    <input type="text" id="post-id" placeholder="e.g., my-new-post">
-                </div>
-                <div class="form-group">
-                    <label>Title</label>
-                    <input type="text" id="post-title" placeholder="Post title">
-                </div>
-                <div class="form-group">
-                    <label>Date</label>
-                    <input type="date" id="post-date">
-                </div>
-                <div class="form-group">
-                    <label>Category</label>
-                    <select id="post-category">
-                        <option value="general">General</option>
-                        <option value="cybersecurity">Cybersecurity</option>
-                        <option value="web-development">Web Development</option>
-                        <option value="announcement">Announcement</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Excerpt</label>
-                    <textarea id="post-excerpt" rows="2" placeholder="Short summary"></textarea>
-                </div>
-                <div class="form-group">
-                    <label>Content</label>
-                    <textarea id="post-content" rows="6" placeholder="Full blog post content"></textarea>
-                </div>
-                <div class="form-group">
-                    <label>
-                        <input type="checkbox" id="post-published" checked> Publish immediately
-                    </label>
-                </div>
-                <button class="stripe-button" id="create-post-btn" style="width: 100%;">Create Post</button>
-                <p id="post-message" style="margin-top: 1rem;"></p>
-            </div>
-
-            <!-- Existing Posts -->
-            <div class="admin-section">
-                <h3>Existing Posts</h3>
-                <div id="existing-posts">
-                    <!-- Loaded via JS -->
-                </div>
-            </div>
+      <!-- Sidebar -->
+      <aside class="admin-sidebar">
+        <div class="admin-sidebar-title">// Control Panel</div>
+        <div class="admin-nav-item active" data-tab="overview">
+          <span class="admin-nav-num">01</span> Overview
         </div>
+        <div class="admin-nav-item" data-tab="analytics">
+          <span class="admin-nav-num">02</span> Analytics
+        </div>
+        <div class="admin-nav-item" data-tab="blog">
+          <span class="admin-nav-num">03</span> Blog
+        </div>
+        <div class="admin-nav-item" data-tab="controls">
+          <span class="admin-nav-num">04</span> Controls
+        </div>
+        <div class="admin-nav-item" data-tab="settings">
+          <span class="admin-nav-num">05</span> Settings
+        </div>
+        <hr class="admin-sidebar-sep">
+        <button class="admin-logout-btn" id="logout-btn">Logout</button>
+      </aside>
+
+      <!-- Content -->
+      <main class="admin-content">
+
+        <!-- ─ OVERVIEW ─────────────────────────────────────── -->
+        <div id="tab-overview" class="admin-tab active">
+          <div class="admin-page-title">// Overview</div>
+          <h2 class="admin-page-h">Dashboard</h2>
+          <div class="admin-page-sub" id="dash-welcome">&gt; Welcome back, RealPhantomLee</div>
+
+          <div class="stat-grid" id="overview-stats"></div>
+
+          <div class="quick-actions">
+            <button class="qa-btn" onclick="exportData()">Export Data</button>
+            <button class="qa-btn" onclick="clearVisitCache()">Clear Visit Cache</button>
+            <button class="qa-btn" onclick="window.open('index.html','_blank')">Preview Site</button>
+          </div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-bottom:1.5rem;">
+            <div class="panel">
+              <div class="panel-title">System Status</div>
+              <div id="system-status"></div>
+            </div>
+            <div class="panel">
+              <div class="panel-title">Recent Activity</div>
+              <div id="recent-activity"></div>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-title">Inbox &mdash; Contact Messages (<span id="msg-count">0</span>)</div>
+            <div id="messages-list"></div>
+          </div>
+        </div>
+
+        <!-- ─ ANALYTICS ────────────────────────────────────── -->
+        <div id="tab-analytics" class="admin-tab">
+          <div class="admin-page-title">// Analytics</div>
+          <h2 class="admin-page-h">Traffic Intelligence</h2>
+          <div class="admin-page-sub">&gt; All data stored locally in your browser</div>
+
+          <div class="stat-grid" id="analytics-stats"></div>
+
+          <div class="panel">
+            <div class="panel-title">Page Traffic Breakdown</div>
+            <table class="traffic-table" id="page-breakdown"></table>
+          </div>
+
+          <div class="panel">
+            <div class="panel-title">Daily Visits — Last 14 Days</div>
+            <table class="traffic-table" id="daily-breakdown"></table>
+          </div>
+        </div>
+
+        <!-- ─ BLOG ─────────────────────────────────────────── -->
+        <div id="tab-blog" class="admin-tab">
+          <div class="admin-page-title">// Blog</div>
+          <h2 class="admin-page-h">Intel Management</h2>
+          <div class="admin-page-sub">&gt; Create and manage your field intel posts</div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;align-items:start;">
+            <div class="panel">
+              <div class="panel-title">Create New Post</div>
+              <div class="form-group">
+                <label>Post ID (slug)</label>
+                <input type="text" id="post-id" placeholder="my-post-title">
+              </div>
+              <div class="form-group">
+                <label>Title</label>
+                <input type="text" id="post-title" placeholder="Post title">
+              </div>
+              <div class="form-group">
+                <label>Date</label>
+                <input type="date" id="post-date">
+              </div>
+              <div class="form-group">
+                <label>Category</label>
+                <select id="post-category">
+                  <option value="general">General</option>
+                  <option value="cybersecurity">Cybersecurity</option>
+                  <option value="web-development">Web Development</option>
+                  <option value="announcement">Announcement</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Tags (comma-separated)</label>
+                <input type="text" id="post-tags" placeholder="security, web, tips">
+              </div>
+              <div class="form-group">
+                <label>Excerpt</label>
+                <textarea id="post-excerpt" rows="2" placeholder="Short summary shown in listings"></textarea>
+              </div>
+              <div class="form-group">
+                <label>Full Content</label>
+                <textarea id="post-content" rows="7" placeholder="Full article content..."></textarea>
+              </div>
+              <div class="form-group" style="display:flex;align-items:center;gap:0.5rem;">
+                <input type="checkbox" id="post-published" checked style="width:auto;">
+                <label style="display:inline;text-transform:none;letter-spacing:0;font-size:0.85rem;">Publish immediately</label>
+              </div>
+              <button class="cta-button" id="create-post-btn" style="width:100%;">PUBLISH POST</button>
+              <p id="post-message" style="margin-top:0.75rem;font-family:'JetBrains Mono',monospace;font-size:0.78rem;"></p>
+            </div>
+
+            <div class="panel">
+              <div class="panel-title">Existing Posts (<span id="post-count">0</span>)</div>
+              <div id="existing-posts"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ─ CONTROLS ──────────────────────────────────────── -->
+        <div id="tab-controls" class="admin-tab">
+          <div class="admin-page-title">// Controls</div>
+          <h2 class="admin-page-h">Site Controls</h2>
+          <div class="admin-page-sub">&gt; Manage site-wide settings and visibility</div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;">
+            <div class="panel">
+              <div class="panel-title">Operational Toggles</div>
+              <div class="toggle-row">
+                <div class="toggle-info">
+                  <h4>Maintenance Mode</h4>
+                  <p>Redirects visitors to a maintenance page</p>
+                </div>
+                <label class="toggle-switch">
+                  <input type="checkbox" id="toggle-maintenance">
+                  <span class="toggle-slider"></span>
+                </label>
+              </div>
+              <div class="toggle-row">
+                <div class="toggle-info">
+                  <h4>Announcement Banner</h4>
+                  <p>Show a site-wide notice to all visitors</p>
+                </div>
+                <label class="toggle-switch">
+                  <input type="checkbox" id="toggle-announcement">
+                  <span class="toggle-slider"></span>
+                </label>
+              </div>
+              <div class="toggle-row">
+                <div class="toggle-info">
+                  <h4>Accepting New Clients</h4>
+                  <p>Enables / disables the checkout flow</p>
+                </div>
+                <label class="toggle-switch">
+                  <input type="checkbox" id="toggle-clients" checked>
+                  <span class="toggle-slider"></span>
+                </label>
+              </div>
+              <div class="toggle-row">
+                <div class="toggle-info">
+                  <h4>Blog Comments</h4>
+                  <p>Allow reader comments on posts</p>
+                </div>
+                <label class="toggle-switch">
+                  <input type="checkbox" id="toggle-comments">
+                  <span class="toggle-slider"></span>
+                </label>
+              </div>
+            </div>
+
+            <div>
+              <div class="panel">
+                <div class="panel-title">Announcement Text</div>
+                <div class="form-group">
+                  <label>Banner Message</label>
+                  <textarea id="announcement-text" rows="3" placeholder="e.g. Bookings open for Q3 2026. Limited slots available."></textarea>
+                </div>
+                <button class="cta-button" style="width:100%;font-size:0.78rem;padding:0.7rem;" onclick="saveAnnouncement()">SAVE ANNOUNCEMENT</button>
+              </div>
+              <div class="panel">
+                <div class="panel-title">Contact Info</div>
+                <div class="form-group">
+                  <label>Business Email</label>
+                  <input type="email" id="ctrl-email" placeholder="contact@phantomcyber.io">
+                </div>
+                <div class="form-group">
+                  <label>Response Commitment</label>
+                  <input type="text" id="ctrl-response" placeholder="e.g. Within 24 hours">
+                </div>
+                <button class="cta-button" style="width:100%;font-size:0.78rem;padding:0.7rem;" onclick="saveContactInfo()">SAVE CONTACT INFO</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ─ SETTINGS ──────────────────────────────────────── -->
+        <div id="tab-settings" class="admin-tab">
+          <div class="admin-page-title">// Settings</div>
+          <h2 class="admin-page-h">Configuration</h2>
+          <div class="admin-page-sub">&gt; API keys and credential management</div>
+
+          <div class="settings-note">
+            &gt; Password and username changes require editing <code>config.json</code> directly.
+            Stripe keys require backend deployment to be live.
+          </div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;">
+            <div class="panel">
+              <div class="panel-title">Admin Credentials</div>
+              <div class="status-row">
+                <span class="status-label">Current Username</span>
+                <span id="current-user" class="mono" style="color:var(--lime-yellow);font-size:0.85rem;">—</span>
+              </div>
+              <div class="status-row">
+                <span class="status-label">Password Status</span>
+                <span class="status-badge badge-green">CONFIGURED</span>
+              </div>
+              <div class="status-row">
+                <span class="status-label">Session Duration</span>
+                <span class="mono" style="font-size:0.8rem;color:var(--light-gray);">8 hours</span>
+              </div>
+              <p style="font-size:0.78rem;color:var(--medium-gray);margin-top:1rem;font-family:'JetBrains Mono',monospace;">
+                To change credentials: update <code>config.json</code> and set a new SHA-256 hash for the password.
+              </p>
+            </div>
+
+            <div class="panel">
+              <div class="panel-title">Stripe Integration</div>
+              <div class="status-row">
+                <span class="status-label">Mode</span>
+                <span class="status-badge badge-yellow">TEST MODE</span>
+              </div>
+              <div class="status-row">
+                <span class="status-label">Public Key</span>
+                <span id="stripe-pk-display" class="mono" style="font-size:0.72rem;color:var(--medium-gray);">—</span>
+              </div>
+              <div class="status-row">
+                <span class="status-label">Webhook</span>
+                <span class="status-badge badge-gray">NOT CONFIGURED</span>
+              </div>
+              <div class="form-group" style="margin-top:1rem;">
+                <label>Public Key</label>
+                <input type="text" id="stripe-pk" placeholder="pk_live_...">
+              </div>
+              <div class="form-group">
+                <label>Secret Key</label>
+                <input type="password" id="stripe-sk" placeholder="sk_live_...">
+              </div>
+              <p style="font-size:0.72rem;color:rgba(248,113,113,0.7);font-family:'JetBrains Mono',monospace;margin-bottom:0.75rem;">
+                &gt; Secret key requires C++ backend deployment to function.
+              </p>
+              <button class="cta-button" style="width:100%;font-size:0.78rem;padding:0.7rem;" onclick="saveStripeKeys()">SAVE KEYS</button>
+            </div>
+
+            <div class="panel">
+              <div class="panel-title">Cloudflare Tunnel</div>
+              <div class="status-row">
+                <span class="status-label">Status</span>
+                <span class="status-badge badge-gray">NOT DEPLOYED</span>
+              </div>
+              <div class="status-row">
+                <span class="status-label">Backend</span>
+                <span class="status-badge badge-yellow">LOCAL PREVIEW</span>
+              </div>
+              <p style="font-size:0.78rem;color:var(--medium-gray);margin-top:1rem;font-family:'JetBrains Mono',monospace;">
+                Configure Cloudflare Tunnel on Raspberry Pi 5 to enable WAN access.
+              </p>
+            </div>
+
+            <div class="panel">
+              <div class="panel-title">Data Management</div>
+              <div class="status-row">
+                <span class="status-label">Visit Cache</span>
+                <span id="cache-size" class="mono" style="font-size:0.8rem;color:var(--light-gray);">—</span>
+              </div>
+              <div class="status-row">
+                <span class="status-label">Site Controls</span>
+                <span class="mono" style="font-size:0.8rem;color:var(--light-gray);">localStorage</span>
+              </div>
+              <div style="display:flex;gap:0.75rem;margin-top:1.2rem;flex-wrap:wrap;">
+                <button class="qa-btn" onclick="exportData()">Export All Data</button>
+                <button class="qa-btn" style="border-color:rgba(248,113,113,0.3);color:#f87171;" onclick="clearAllData()">Clear All Data</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </main>
     </div>
+  </div>
 
-    <footer>
-        <div class="footer-content">
-            <div class="footer-section">
-                <h4>CyberSec Web Services</h4>
-                <p>Admin Dashboard</p>
-            </div>
-        </div>
-        <div class="footer-bottom">
-            <p>&copy; 2026 CyberSec Web Services. All rights reserved.</p>
-        </div>
-    </footer>
-
-    <script src="/static/js/main.js"></script>
-    <script src="/static/js/admin.js"></script>
+  <script src="./js/site.js"></script>
+  <script src="./js/admin.js"></script>
 </body>
 </html>

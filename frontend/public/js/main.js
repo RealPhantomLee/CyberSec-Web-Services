@@ -1,8 +1,26 @@
 // Main JavaScript for CyberSec Web Services
+
+// HTML-encode a value before inserting into innerHTML
+function esc(s) {
+    return String(s)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     loadServices();
     loadProducts();
     loadBlogPosts();
+
+    // Delegated handler — avoids inline onclick with unescaped strings
+    document.addEventListener('click', function(e) {
+        const btn = e.target.closest('.add-to-cart');
+        if (!btn) return;
+        addToCart(btn.dataset.id, btn.dataset.name, Number(btn.dataset.price));
+    });
 });
 
 // Load services from API or JSON file
@@ -23,18 +41,21 @@ async function loadServices() {
         
         grid.innerHTML = data.services.map(service => `
             <div class="service-card">
-                ${service.badge ? `<div class="service-badge">${service.badge}</div>` : ''}
-                <h3>${service.name}</h3>
-                ${service.tagline ? `<div class="service-tagline">${service.tagline}</div>` : ''}
-                <div class="price">$${(service.price / 100).toFixed(2)} <span>/ ${service.unit || 'project'}</span></div>
-                <p>${service.description}</p>
+                ${service.badge ? `<div class="service-badge">${esc(service.badge)}</div>` : ''}
+                <h3>${esc(service.name)}</h3>
+                ${service.tagline ? `<div class="service-tagline">${esc(service.tagline)}</div>` : ''}
+                <div class="price">$${(service.price / 100).toFixed(2)} <span>/ ${esc(service.unit || 'project')}</span></div>
+                <p>${esc(service.description)}</p>
                 <ul>
-                    ${(service.features || []).slice(0, 6).map(f => `<li>${f}</li>`).join('')}
+                    ${(service.features || []).slice(0, 6).map(f => `<li>${esc(f)}</li>`).join('')}
                 </ul>
-                ${service.timeline ? `<div class="service-meta"><span class="service-meta-label">Timeline:</span> ${service.timeline}</div>` : ''}
+                ${service.timeline ? `<div class="service-meta"><span class="service-meta-label">Timeline:</span> ${esc(service.timeline)}</div>` : ''}
                 <div class="service-actions">
-                    <button class="cta-button" style="flex:1;" onclick="addToCart('${service.id}', '${service.name}', ${service.price})">Add to Cart</button>
-                    <a href="quote.html" class="cta-button-ghost" style="flex:1;text-align:center;padding:0.9rem 1rem;">Get Quote</a>
+                    <button class="cta-button add-to-cart" style="flex:1;"
+                        data-id="${esc(service.id)}"
+                        data-name="${esc(service.name)}"
+                        data-price="${Number(service.price)}">Add to Cart</button>
+                    <a href="contact.html" class="cta-button-ghost" style="flex:1;text-align:center;padding:0.9rem 1rem;">Get Quote</a>
                 </div>
             </div>
         `).join('');
@@ -61,12 +82,13 @@ async function loadProducts() {
         
         grid.innerHTML = data.addons.map(product => `
             <div class="product-card">
-                <h4>${product.name}</h4>
+                <h4>${esc(product.name)}</h4>
                 <div class="price">$${(product.price / 100).toFixed(2)}</div>
-                <p>${product.description}</p>
-                <button class="cta-button" style="padding: 0.55rem 1.1rem; font-size: 0.78rem;" onclick="addToCart('${product.id}', '${product.name}', ${product.price})">
-                    Add to Cart
-                </button>
+                <p>${esc(product.description)}</p>
+                <button class="cta-button add-to-cart" style="padding: 0.55rem 1.1rem; font-size: 0.78rem;"
+                    data-id="${esc(product.id)}"
+                    data-name="${esc(product.name)}"
+                    data-price="${Number(product.price)}">Add to Cart</button>
             </div>
         `).join('');
     } catch (error) {
@@ -95,10 +117,10 @@ async function loadBlogPosts() {
             <div class="blog-card">
                 <div class="blog-image">&gt;_</div>
                 <div class="blog-content">
-                    <span class="blog-category">${post.category}</span>
-                    <h3>${post.title}</h3>
-                    <p class="excerpt">${post.excerpt}</p>
-                    <small>${post.date}</small>
+                    <span class="blog-category">${esc(post.category)}</span>
+                    <h3>${esc(post.title)}</h3>
+                    <p class="excerpt">${esc(post.excerpt)}</p>
+                    <small>${esc(post.date)}</small>
                 </div>
             </div>
         `).join('');
@@ -141,13 +163,8 @@ function showToast(message) {
     }, 2600);
 }
 
-function updateCartCount() {
-    const count = cart.length;
-    // You can add a cart counter to the nav here
-}
-
 // Init checkout page if on checkout
-if (window.location.pathname === '/checkout') {
+if (window.location.pathname.includes('checkout')) {
     loadCheckout();
 }
 
