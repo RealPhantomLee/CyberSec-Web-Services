@@ -1,7 +1,14 @@
 # Runtime secrets and live data — never commit
 data/config.json
 data/contacts.json
+data/messages.json
 data/payments.json
+
+# Frontend config (contains live keys) — copy config.example.json
+frontend/public/config.json
+
+# Development screenshots
+frontend/public/assets/screenshots/
 
 # Compiled artifacts
 backend/build/

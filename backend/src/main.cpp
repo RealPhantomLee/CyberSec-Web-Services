@@ -1,13 +1,16 @@
 #include "httplib.h"
 #include <nlohmann/json.hpp>
-#include <openssl/sha.h>
+#include <openssl/evp.h>
+#include <openssl/hmac.h>
 #include <openssl/rand.h>
 #include "email.hpp"
 
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include <iomanip>
 #include <string>
+#include <vector>
 #include <unordered_map>
 #include <mutex>
 #include <chrono>
@@ -169,6 +172,55 @@ static std::string iso_now() {
     time_t t = time(nullptr);
     strftime(buf, sizeof(buf), "%Y-%m-%dT%H:%M:%SZ", gmtime(&t));
     return buf;
+}
+
+// ── Stripe webhook signature verification ────────────────────────────────────
+
+static std::vector<unsigned char> b64_decode(const std::string& enc) {
+    std::vector<unsigned char> out(enc.size());
+    int len = EVP_DecodeBlock(out.data(),
+        reinterpret_cast<const unsigned char*>(enc.data()), (int)enc.size());
+    if (len < 0) return {};
+    int pad = 0;
+    if (!enc.empty() && enc.back() == '=') pad++;
+    if (enc.size() > 1 && enc[enc.size()-2] == '=') pad++;
+    out.resize(len - pad);
+    return out;
+}
+
+static bool verify_stripe_sig(const std::string& payload,
+                               const std::string& sig_header,
+                               const std::string& secret) {
+    std::string ts, v1;
+    std::istringstream ss(sig_header);
+    std::string part;
+    while (std::getline(ss, part, ',')) {
+        if (part.size() > 2 && part.substr(0,2) == "t=")  ts = part.substr(2);
+        if (part.size() > 3 && part.substr(0,3) == "v1=") v1 = part.substr(3);
+    }
+    if (ts.empty() || v1.empty()) return false;
+
+    long long now = std::chrono::duration_cast<std::chrono::seconds>(
+        std::chrono::system_clock::now().time_since_epoch()).count();
+    long long diff = now - std::stoll(ts);
+    if (diff > 300 || diff < -300) return false;
+
+    std::string signed_payload = ts + "." + payload;
+    std::string enc = (secret.size() > 6 && secret.substr(0,6) == "whsec_")
+                    ? secret.substr(6) : secret;
+    auto key = b64_decode(enc);
+    if (key.empty()) return false;
+
+    unsigned char hmac_out[EVP_MAX_MD_SIZE];
+    unsigned int  hmac_len = 0;
+    HMAC(EVP_sha256(), key.data(), (int)key.size(),
+         reinterpret_cast<const unsigned char*>(signed_payload.data()),
+         signed_payload.size(), hmac_out, &hmac_len);
+
+    std::ostringstream hex;
+    for (unsigned int i = 0; i < hmac_len; ++i)
+        hex << std::hex << std::setw(2) << std::setfill('0') << (int)hmac_out[i];
+    return hex.str() == v1;
 }
 
 // ── SMTP config from JSON ─────────────────────────────────────────────────────
@@ -466,6 +518,77 @@ int main() {
                 stripe_resp.value("error", json::object()).value("message", "Stripe error."));
 
         json_ok(res, {{"url", stripe_resp["url"]}});
+    });
+
+    // ── POST /api/stripe/webhook ──────────────────────────────────────────────
+    svr.Post("/api/stripe/webhook", [&](const Request& req, Response& res) {
+        std::string sig_header = req.get_header_value("Stripe-Signature");
+        if (sig_header.empty())
+            return json_err(res, 400, "Missing Stripe-Signature header.");
+
+        std::string secret = config["stripe"].value("webhook_secret", "");
+        if (secret.empty())
+            return json_err(res, 503, "Stripe webhook not configured.");
+
+        if (!verify_stripe_sig(req.body, sig_header, secret))
+            return json_err(res, 400, "Invalid signature.");
+
+        json event;
+        try { event = json::parse(req.body); }
+        catch (...) { return json_err(res, 400, "Invalid JSON."); }
+
+        std::string event_type = event.value("type", "");
+        std::string event_id   = event.value("id",   "");
+
+        // Log event to payments.json
+        std::string payments_path = DATA_ROOT + "payments.json";
+        {
+            std::lock_guard<std::mutex> lk(file_mtx);
+            json payments = load_json(payments_path);
+            if (!payments.contains("events") || !payments["events"].is_array())
+                payments["events"] = json::array();
+            json entry;
+            entry["id"]        = event_id;
+            entry["type"]      = event_type;
+            entry["timestamp"] = iso_now();
+            entry["data"]      = event.value("data", json::object());
+            payments["events"].insert(payments["events"].begin(), entry);
+            if (payments["events"].size() > 1000)
+                payments["events"].erase(payments["events"].end() - 1);
+            std::ofstream f(payments_path);
+            f << payments.dump(2);
+        }
+
+        // Email notification on successful payment
+        if (event_type == "checkout.session.completed" ||
+            event_type == "payment_intent.succeeded") {
+            auto& obj   = event["data"]["object"];
+            long long c = obj.value("amount_total", obj.value("amount", 0LL));
+            std::string amount = std::to_string(c / 100) + "."
+                               + (c % 100 < 10 ? "0" : "")
+                               + std::to_string(c % 100) + " "
+                               + obj.value("currency", "usd");
+            std::string cust   = obj.value("customer_email",
+                                     obj.value("receipt_email", std::string("unknown")));
+            std::thread([smtp_cfg = smtp, event_type, event_id, amount, cust]() {
+                std::string subj = "[PHANTOM] Payment received — " + amount;
+                std::string text =
+                    "PHANTOM CYBER SOLUTIONS // PAYMENT RECEIVED\n"
+                    "============================================\n\n"
+                    "Event:    " + event_type + "\n"
+                    "Amount:   " + amount     + "\n"
+                    "Customer: " + cust       + "\n"
+                    "Event ID: " + event_id   + "\n";
+                std::string html =
+                    "<p><b>Event:</b> "    + event_type + "<br>"
+                    "<b>Amount:</b> "      + amount     + "<br>"
+                    "<b>Customer:</b> "    + cust       + "<br>"
+                    "<b>Event ID:</b> "    + event_id   + "</p>";
+                smtp_send(smtp_cfg, smtp_cfg.admin_email, subj, text, html);
+            }).detach();
+        }
+
+        json_ok(res, {{"received", true}});
     });
 
     // ── Static files ──────────────────────────────────────────────────────────
