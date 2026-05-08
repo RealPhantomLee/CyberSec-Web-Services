@@ -1,5 +1,9 @@
 # CyberSec Web Services
 
+**Self-hosted C++ business website powering [phantomcybersolutions.com](https://phantomcybersolutions.com) — service catalog, blog, Stripe Checkout, HMAC-verified webhooks, themed transactional email, and a session-authenticated admin dashboard. Deployed on a Raspberry Pi 5 behind a Cloudflare Tunnel.**
+
+🔗 **Live:** [phantomcybersolutions.com](https://phantomcybersolutions.com)
+
 A self-hosted business website for cybersecurity and web development services. Built with a C++ backend, plain HTML/CSS/JS frontend, and designed to run on a Raspberry Pi (or any Linux server) behind a Cloudflare Tunnel.
 
 ## Features
@@ -124,6 +128,17 @@ Or use the provided systemd service template (see [DEPLOY.md](DEPLOY.md)).
 
 See [DEPLOY.md](DEPLOY.md) for systemd service setup and Cloudflare Tunnel configuration.
 
+## Related projects
+
+- [VaultKeeper](https://github.com/RealPhantomLee/VaultKeeper) — local-first encrypted knowledge platform
+- [Local-AI-Web-Workspace](https://github.com/RealPhantomLee/Local-AI-Web-Workspace) — local-first AI stack
+- [airpoint](https://github.com/RealPhantomLee/airpoint) — touchless cursor control via webcam
+- [vulnerability-management-lab](https://github.com/RealPhantomLee/vulnerability-management-lab) — end-to-end VM lifecycle lab
+- [azure-security-monitoring-lab](https://github.com/RealPhantomLee/azure-security-monitoring-lab) — Azure hardening + KQL detections
+- [nourished-temple](https://github.com/RealPhantomLee/nourished-temple) — production Next.js e-commerce + wellness site
+
+Full portfolio: [github.com/RealPhantomLee](https://github.com/RealPhantomLee)
+
 ## License
 
-MIT
+[MIT](LICENSE)
