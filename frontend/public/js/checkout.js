@@ -40,7 +40,7 @@ function loadCheckout() {
 
 function initiateStripeCheckout() {
     if (cart.length === 0) {
-        alert('Your cart is empty!');
+        showToast('Your cart is empty');
         return;
     }
 
@@ -55,17 +55,26 @@ function initiateStripeCheckout() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ items: cart })
     })
-    .then(res => res.json())
+    .then(res => {
+        if (res.status === 503) {
+            showToast('Online payment not available yet — redirecting to contact');
+            setTimeout(() => { window.location.href = 'contact.html'; }, 2200);
+            if (btn) { btn.disabled = false; btn.textContent = 'COMPLETE MISSION →'; }
+            return null;
+        }
+        return res.json();
+    })
     .then(data => {
+        if (!data) return;
         if (data.url) {
             window.location.href = data.url;
         } else {
-            alert('Checkout error: ' + (data.error || 'Unknown error. Please try again.'));
+            showToast(data.error || 'Checkout error — please try again');
             if (btn) { btn.disabled = false; btn.textContent = 'COMPLETE MISSION →'; }
         }
     })
     .catch(() => {
-        alert('Checkout error. Please try again.');
+        showToast('Connection error — please try again');
         if (btn) { btn.disabled = false; btn.textContent = 'COMPLETE MISSION →'; }
     });
 }

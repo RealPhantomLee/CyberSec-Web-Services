@@ -42,13 +42,13 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 async function checkAuth() {
-  const hasCookie = document.cookie.split(';').some(c => c.trim().startsWith('admin_session='));
-  if (!hasCookie) { showLogin(); return; }
   try {
-    const r = await fetch('/api/admin/analytics');
+    const r = await fetch('/api/admin/analytics', { credentials: 'include' });
+    console.log('[checkAuth] status:', r.status);
     if (r.ok) { showDashboard(); initDashboard(); }
-    else      { expireCookie(); showLogin(); }
-  } catch {
+    else      { showLogin(); }
+  } catch(e) {
+    console.error('[checkAuth] error:', e);
     showLogin();
   }
 }
@@ -63,9 +63,6 @@ function showDashboard() {
   document.getElementById('dashboard-section').style.display = 'block';
 }
 
-function expireCookie() {
-  document.cookie = 'admin_session=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
-}
 
 const LOCKOUT_KEY      = 'pcs_admin_lockout';
 const ATTEMPTS_KEY     = 'pcs_admin_attempts';
@@ -148,7 +145,6 @@ async function login() {
 
 async function logout() {
   await fetch('/api/admin/logout', { method: 'POST' }).catch(() => {});
-  expireCookie();
   location.reload();
 }
 
@@ -250,18 +246,22 @@ async function renderSystemStatus() {
   const el = document.getElementById('system-status');
   if (!el) return;
 
-  let stripeMode = 'TEST';
+  let stripeMode = 'UNCONFIGURED', stripeBadge = 'badge-red';
+  let backendStatus = 'RUNNING', backendBadge = 'badge-green';
+  let cfStatus = 'NOT DEPLOYED', cfBadge = 'badge-red';
+
   try {
-    const cfg = await fetch('./config.json').then(r => r.json());
-    const pk  = cfg.stripe?.public_key || '';
-    if (pk.startsWith('pk_live_')) stripeMode = 'LIVE';
-    else if (pk.includes('YOUR_KEY')) stripeMode = 'UNCONFIGURED';
+    const s = await fetch('/api/admin/status').then(r => r.json());
+    if (s.stripe_mode === 'live')       { stripeMode = 'LIVE';  stripeBadge = 'badge-green'; }
+    else if (s.stripe_mode === 'test')  { stripeMode = 'TEST';  stripeBadge = 'badge-yellow'; }
+    if (s.backend === 'running')        { backendStatus = 'RUNNING'; backendBadge = 'badge-green'; }
+    if (s.cloudflare_enabled)           { cfStatus = 'ACTIVE';  cfBadge = 'badge-green'; }
   } catch (_) {}
 
-  const stripeBadge = stripeMode === 'LIVE' ? 'badge-green'
-                    : stripeMode === 'TEST' ? 'badge-yellow' : 'badge-red';
-
-  const maintenance = localStorage.getItem('pcs_maintenance') === 'true';
+  let settings = {};
+  try { settings = await fetch('/api/admin/settings').then(r => r.json()); } catch (_) {}
+  const maintenance     = settings.maintenance_mode   === true;
+  const acceptingClients= settings.accepting_clients  !== false;
 
   el.innerHTML = `
     <div class="status-row">
@@ -274,11 +274,11 @@ async function renderSystemStatus() {
     </div>
     <div class="status-row">
       <span class="status-label">C++ Backend</span>
-      <span class="status-badge badge-gray">NOT BUILT</span>
+      <span class="status-badge ${backendBadge}">${backendStatus}</span>
     </div>
     <div class="status-row">
       <span class="status-label">Cloudflare Tunnel</span>
-      <span class="status-badge badge-gray">NOT DEPLOYED</span>
+      <span class="status-badge ${cfBadge}">${cfStatus}</span>
     </div>
     <div class="status-row">
       <span class="status-label">Maintenance Mode</span>
@@ -286,9 +286,7 @@ async function renderSystemStatus() {
     </div>
     <div class="status-row">
       <span class="status-label">Accepting Clients</span>
-      <span class="status-badge ${localStorage.getItem('pcs_clients') !== 'false' ? 'badge-green' : 'badge-red'}">
-        ${localStorage.getItem('pcs_clients') !== 'false' ? 'YES' : 'NO'}
-      </span>
+      <span class="status-badge ${acceptingClients ? 'badge-green' : 'badge-red'}">${acceptingClients ? 'YES' : 'NO'}</span>
     </div>
   `;
 }
@@ -491,52 +489,98 @@ function togglePublish(id) {
 }
 
 // ─── CONTROLS TAB ─────────────────────────────────────────────────────────────
-function loadControlStates() {
-  const checks = { 'toggle-maintenance': 'pcs_maintenance', 'toggle-announcement': 'pcs_announcement_on', 'toggle-clients': 'pcs_clients', 'toggle-comments': 'pcs_comments' };
-  Object.entries(checks).forEach(([id, key]) => {
+const CTRL_MAP = {
+  'toggle-maintenance':  'maintenance_mode',
+  'toggle-announcement': 'announcement_enabled',
+  'toggle-clients':      'accepting_clients',
+  'toggle-comments':     'comments_enabled',
+};
+
+async function loadControlStates() {
+  let s = {};
+  try { s = await fetch('/api/admin/settings').then(r => r.json()); } catch (_) {}
+
+  Object.entries(CTRL_MAP).forEach(([id, key]) => {
     const el = document.getElementById(id);
     if (!el) return;
-    const val = localStorage.getItem(key);
-    el.checked = key === 'pcs_clients' ? val !== 'false' : val === 'true';
-    el.addEventListener('change', () => {
-      localStorage.setItem(key, String(el.checked));
-      renderSystemStatus();
-    });
+    el.checked = s[key] !== undefined ? Boolean(s[key]) : (key === 'accepting_clients');
+    el.addEventListener('change', () => saveControl(key, el.checked));
   });
 
-  const announcementText = localStorage.getItem('pcs_announcement_text') || '';
   const ta = document.getElementById('announcement-text');
-  if (ta) ta.value = announcementText;
-}
+  if (ta) ta.value = s.announcement_text || '';
 
-function loadContactInfo() {
   const emailEl = document.getElementById('ctrl-email');
   const respEl  = document.getElementById('ctrl-response');
-  if (emailEl) emailEl.value = localStorage.getItem('pcs_email') || '';
-  if (respEl)  respEl.value  = localStorage.getItem('pcs_response') || '';
+  if (emailEl) emailEl.value = s.contact_email    || '';
+  if (respEl)  respEl.value  = s.contact_response || '';
 }
 
-function saveAnnouncement() {
+async function saveControl(key, value) {
+  await fetch('/api/admin/settings', {
+    method: 'POST', headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({[key]: value})
+  }).catch(() => {});
+  renderSystemStatus();
+}
+
+function loadContactInfo() {}
+
+async function saveAnnouncement() {
   const text = document.getElementById('announcement-text')?.value || '';
-  localStorage.setItem('pcs_announcement_text', text);
+  await fetch('/api/admin/settings', {
+    method: 'POST', headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({announcement_text: text})
+  }).catch(() => {});
   showAdminToast('Announcement saved.');
 }
 
-function saveContactInfo() {
-  localStorage.setItem('pcs_email',    document.getElementById('ctrl-email')?.value || '');
-  localStorage.setItem('pcs_response', document.getElementById('ctrl-response')?.value || '');
+async function saveContactInfo() {
+  const email    = document.getElementById('ctrl-email')?.value    || '';
+  const response = document.getElementById('ctrl-response')?.value || '';
+  await fetch('/api/admin/settings', {
+    method: 'POST', headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({contact_email: email, contact_response: response})
+  }).catch(() => {});
   showAdminToast('Contact info saved.');
 }
 
 // ─── SETTINGS TAB ─────────────────────────────────────────────────────────────
 async function loadSettings() {
   try {
-    const cfg = await fetch('./config.json').then(r => r.json());
+    const cfg = await fetch('/api/admin/config').then(r => r.json());
+
     const pkEl = document.getElementById('stripe-pk-display');
     if (pkEl) {
-      const pk = cfg.stripe?.public_key || 'Not set';
-      pkEl.textContent = pk.includes('YOUR_KEY') ? 'Not configured' : pk.slice(0, 20) + '...';
+      const pk = cfg.stripe?.public_key || '';
+      pkEl.textContent = pk && !pk.includes('YOUR_KEY') ? pk.slice(0, 22) + '...' : 'Not configured';
     }
+
+    const modeBadge = document.getElementById('stripe-mode-badge');
+    if (modeBadge) {
+      const m = cfg.stripe?.mode || 'unconfigured';
+      modeBadge.textContent  = m.toUpperCase();
+      modeBadge.className    = 'status-badge ' + (m === 'live' ? 'badge-green' : m === 'test' ? 'badge-yellow' : 'badge-red');
+    }
+
+    const whBadge = document.getElementById('stripe-webhook-badge');
+    if (whBadge) {
+      whBadge.textContent = cfg.stripe?.webhook_configured ? 'CONFIGURED' : 'NOT CONFIGURED';
+      whBadge.className   = 'status-badge ' + (cfg.stripe?.webhook_configured ? 'badge-green' : 'badge-gray');
+    }
+
+    const cfBadge = document.getElementById('cf-status-badge');
+    if (cfBadge) {
+      cfBadge.textContent = cfg.cloudflare?.enabled ? 'ACTIVE' : 'NOT DEPLOYED';
+      cfBadge.className   = 'status-badge ' + (cfg.cloudflare?.enabled ? 'badge-green' : 'badge-red');
+    }
+
+    const cfBackend = document.getElementById('cf-backend-badge');
+    if (cfBackend) {
+      cfBackend.textContent = 'RUNNING';
+      cfBackend.className   = 'status-badge badge-green';
+    }
+
     const userEl = document.getElementById('current-user');
     if (userEl) userEl.textContent = cfg.admin?.username || 'Admin';
   } catch (_) {}
@@ -548,12 +592,22 @@ async function loadSettings() {
   }
 }
 
-function saveStripeKeys() {
-  const pk = document.getElementById('stripe-pk')?.value || '';
-  const sk = document.getElementById('stripe-sk')?.value || '';
-  if (pk || sk) {
-    showAdminToast('Keys saved to memory. Update config.json for persistence.');
-  }
+async function saveStripeKeys() {
+  const pk = document.getElementById('stripe-pk')?.value.trim() || '';
+  const sk = document.getElementById('stripe-sk')?.value.trim() || '';
+  const wh = document.getElementById('stripe-wh')?.value.trim() || '';
+  if (!pk && !sk && !wh) { showAdminToast('Enter at least one key to save.'); return; }
+  try {
+    const body = {};
+    if (pk) body.public_key     = pk;
+    if (sk) body.secret_key     = sk;
+    if (wh) body.webhook_secret = wh;
+    const r = await fetch('/api/admin/config/stripe', {
+      method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body)
+    });
+    if (r.ok) { showAdminToast('Stripe keys saved.'); loadSettings(); }
+    else      { showAdminToast('Failed to save keys.'); }
+  } catch (_) { showAdminToast('Connection error.'); }
 }
 
 // ─── DATA UTILITIES ───────────────────────────────────────────────────────────

@@ -5,6 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#141414">
   <title>Checkout | Phantom Cyber Solutions</title>
+  <meta name="description" content="Review your selected services and complete your purchase with Phantom Cyber Solutions.">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Phantom Cyber Solutions">
+  <meta property="og:title" content="Checkout | Phantom Cyber Solutions">
+  <meta property="og:url" content="https://phantomcybersolutions.com/checkout.html">
+  <meta name="robots" content="noindex">
+  <link rel="canonical" href="https://phantomcybersolutions.com/checkout.html">
+  <link rel="icon" href="./favicon.svg" type="image/svg+xml">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,300;0,400;0,500;0,700;1,400&family=Inter:wght@300;400;500;700;800&display=swap" rel="stylesheet">
@@ -52,22 +60,19 @@
 
   <section class="checkout-container reveal">
     <div class="checkout-summary" id="checkout-summary">
-      <h3 style="color:var(--lime-yellow);margin-bottom:1rem;font-family:'JetBrains Mono',monospace;font-size:0.78rem;letter-spacing:2px;text-transform:uppercase;">Order Summary</h3>
+      <h3 class="checkout-order-heading">Order Summary</h3>
       <div id="checkout-items"></div>
-      <hr style="border-color:rgba(255,255,255,0.07);margin:1rem 0;">
-      <div style="display:flex;justify-content:space-between;font-size:1.2rem;color:var(--white);font-weight:700;">
+      <hr class="divider">
+      <div class="checkout-total-row">
         <span>Total:</span>
         <span id="checkout-total" class="mono">$0.00</span>
       </div>
     </div>
 
-    <div style="background:rgba(20,20,20,0.8);padding:2rem;border-radius:6px;border:1px solid rgba(255,255,255,0.06);">
-      <h3 style="color:var(--lime-yellow);margin-bottom:0.75rem;font-family:'JetBrains Mono',monospace;font-size:0.78rem;letter-spacing:2px;text-transform:uppercase;">Payment Details</h3>
-      <p style="color:var(--medium-gray);margin-bottom:1.5rem;font-size:0.85rem;font-family:'JetBrains Mono',monospace;">
-        &gt; Configure Stripe keys in <code>config.json</code> to enable live payments.
-        Need to talk first? <a href="contact.html">Send a message &rarr;</a>
-      </p>
+    <div class="checkout-panel">
+      <h3 class="checkout-payment-heading">Payment Details</h3>
       <button class="stripe-button" id="checkout-button">COMPLETE MISSION &rarr;</button>
+      <p class="checkout-alt-cta">Prefer to be invoiced directly? <a href="contact.html">Get in touch &rarr;</a></p>
     </div>
   </section>
 
@@ -96,6 +101,7 @@
     </div>
     <div class="footer-bottom">
       <p class="mono">&copy; 2026 Phantom Cyber Solutions &mdash; All rights reserved. // Stay vigilant.</p>
+      <p class="mono" style="margin-top:0.5rem;font-size:0.7rem;opacity:0.5;"><a href="privacy.html" style="color:inherit;">Privacy Policy</a></p>
     </div>
   </footer>
 

@@ -307,9 +307,21 @@ int main() {
     std::string adm_hash = config["admin"].value("password_hash", "");
     int         port     = config["site"].value("port",           8080);
 
-    std::string contacts_path = DATA_ROOT + "contacts.json";
+    std::string contacts_path  = DATA_ROOT + "contacts.json";
+    std::string settings_path  = DATA_ROOT + "settings.json";
+    std::string config_path    = DATA_ROOT + "config.json";
     if (!fs::exists(contacts_path))
         save_json(contacts_path, json::array());
+    if (!fs::exists(settings_path))
+        save_json(settings_path, {
+            {"maintenance_mode",    false},
+            {"accepting_clients",   true},
+            {"announcement_enabled",false},
+            {"announcement_text",   ""},
+            {"comments_enabled",    true},
+            {"contact_email",       smtp.admin_email},
+            {"contact_response",    ""}
+        });
 
     curl_global_init(CURL_GLOBAL_ALL);
 
@@ -507,6 +519,76 @@ int main() {
         });
     });
 
+    // ── GET /api/admin/status ─────────────────────────────────────────────────
+    svr.Get("/api/admin/status", [&](const Request& req, Response& res) {
+        if (!check_auth(req)) return json_err(res, 403, "Unauthorized");
+        std::string pk = config.value("stripe", json::object()).value("public_key", "");
+        std::string wh = config.value("stripe", json::object()).value("webhook_secret", "");
+        std::string stripe_mode = "unconfigured";
+        if (pk.rfind("pk_live_", 0) == 0)      stripe_mode = "live";
+        else if (pk.rfind("pk_test_", 0) == 0) stripe_mode = "test";
+        bool cf_enabled = config.value("cloudflare_tunnel", json::object()).value("enabled", false);
+        bool wh_configured = !wh.empty() && wh != "whsec_YOUR_SECRET";
+        json_ok(res, {
+            {"backend",            "running"},
+            {"stripe_mode",        stripe_mode},
+            {"webhook_configured", wh_configured},
+            {"cloudflare_enabled", cf_enabled}
+        });
+    });
+
+    // ── GET /api/admin/config ─────────────────────────────────────────────────
+    svr.Get("/api/admin/config", [&](const Request& req, Response& res) {
+        if (!check_auth(req)) return json_err(res, 403, "Unauthorized");
+        std::string pk = config.value("stripe", json::object()).value("public_key", "");
+        std::string wh = config.value("stripe", json::object()).value("webhook_secret", "");
+        std::string mode = pk.rfind("pk_live_",0)==0 ? "live" : pk.rfind("pk_test_",0)==0 ? "test" : "unconfigured";
+        json_ok(res, {
+            {"stripe", {
+                {"public_key",          pk},
+                {"mode",                mode},
+                {"webhook_configured",  !wh.empty() && wh != "whsec_YOUR_SECRET"}
+            }},
+            {"admin",      {{"username", config["admin"].value("username","")}}},
+            {"cloudflare", {
+                {"enabled",    config.value("cloudflare_tunnel",json::object()).value("enabled",false)},
+                {"tunnel_id",  config.value("cloudflare_tunnel",json::object()).value("tunnel_id","")}
+            }}
+        });
+    });
+
+    // ── POST /api/admin/config/stripe ─────────────────────────────────────────
+    svr.Post("/api/admin/config/stripe", [&](const Request& req, Response& res) {
+        if (!check_auth(req)) return json_err(res, 403, "Unauthorized");
+        json body;
+        try { body = json::parse(req.body); } catch(...) { return json_err(res, 400, "Invalid JSON"); }
+        std::string pk = body.value("public_key", "");
+        std::string sk = body.value("secret_key", "");
+        std::string wh = body.value("webhook_secret", "");
+        if (!pk.empty()) config["stripe"]["public_key"]    = pk;
+        if (!sk.empty()) config["stripe"]["secret_key"]    = sk;
+        if (!wh.empty()) config["stripe"]["webhook_secret"]= wh;
+        if (save_json(config_path, config)) json_ok(res, {{"success", true}});
+        else json_err(res, 500, "Failed to save config");
+    });
+
+    // ── GET /api/admin/settings ───────────────────────────────────────────────
+    svr.Get("/api/admin/settings", [&](const Request& req, Response& res) {
+        if (!check_auth(req)) return json_err(res, 403, "Unauthorized");
+        json_ok(res, load_json(settings_path));
+    });
+
+    // ── POST /api/admin/settings ──────────────────────────────────────────────
+    svr.Post("/api/admin/settings", [&](const Request& req, Response& res) {
+        if (!check_auth(req)) return json_err(res, 403, "Unauthorized");
+        json body;
+        try { body = json::parse(req.body); } catch(...) { return json_err(res, 400, "Invalid JSON"); }
+        json cur = load_json(settings_path);
+        for (auto& [k, v] : body.items()) cur[k] = v;
+        if (save_json(settings_path, cur)) json_ok(res, {{"success", true}});
+        else json_err(res, 500, "Failed to save settings");
+    });
+
     // ── POST /api/checkout/create-session ────────────────────────────────────
     svr.Post("/api/checkout/create-session", [&](const Request& req, Response& res) {
         std::string secret_key = config["stripe"].value("secret_key", "");
@@ -667,19 +749,21 @@ int main() {
     }
 
     // Security headers on every response
-    svr.set_post_routing_handler([](const Request&, Response& res) {
+    svr.set_post_routing_handler([](const Request& req, Response& res) {
+        if (req.path.find("h4nt3dh0u53") != std::string::npos)
+            res.set_header("Cache-Control", "no-store, no-cache, must-revalidate");
         res.set_header("X-Content-Type-Options",  "nosniff");
         res.set_header("X-Frame-Options",         "SAMEORIGIN");
         res.set_header("Referrer-Policy",         "strict-origin-when-cross-origin");
-        res.set_header("Permissions-Policy",      "camera=(), microphone=(), geolocation=()");
+        res.set_header("Permissions-Policy",      "camera=(), microphone=(), geolocation=(), run-ad-auction=(), browsing-topics=()");
         res.set_header("Strict-Transport-Security","max-age=31536000; includeSubDomains");
         res.set_header("Content-Security-Policy",
             "default-src 'self'; "
-            "script-src 'self' https://js.stripe.com 'unsafe-inline'; "
+            "script-src 'self' https://js.stripe.com https://static.cloudflareinsights.com 'unsafe-inline'; "
             "style-src 'self' https://fonts.googleapis.com 'unsafe-inline'; "
             "font-src 'self' https://fonts.gstatic.com; "
-            "connect-src 'self'; "
-            "frame-src https://js.stripe.com; "
+            "connect-src 'self' https://api.stripe.com https://cloudflareinsights.com; "
+            "frame-src https://js.stripe.com https://*.stripe.com; "
             "img-src 'self' data:; "
             "object-src 'none'; "
             "base-uri 'self'");

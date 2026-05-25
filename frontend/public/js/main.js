@@ -1,4 +1,4 @@
-// Main JavaScript for CyberSec Web Services
+// Main JavaScript for Phantom Cyber Solutions
 
 // HTML-encode a value before inserting into innerHTML
 function esc(s) {
@@ -163,27 +163,3 @@ function showToast(message) {
     }, 2600);
 }
 
-// Init checkout page if on checkout
-if (window.location.pathname.includes('checkout')) {
-    loadCheckout();
-}
-
-async function loadCheckout() {
-    const itemsDiv = document.getElementById('checkout-items');
-    const totalDiv = document.getElementById('checkout-total');
-    
-    if (!itemsDiv || !totalDiv) return;
-    
-    let total = 0;
-    itemsDiv.innerHTML = cart.map(item => {
-        total += item.price;
-        return `
-            <div class="checkout-item">
-                <span>${item.name}</span>
-                <span>$${(item.price / 100).toFixed(2)}</span>
-            </div>
-        `;
-    }).join('') + (cart.length === 0 ? '<p style="color: var(--medium-gray);">Your cart is empty.</p>' : '');
-    
-    totalDiv.textContent = `$${(total / 100).toFixed(2)}`;
-}

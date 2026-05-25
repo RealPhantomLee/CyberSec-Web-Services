@@ -5,6 +5,17 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#141414">
   <title>Contact | Phantom Cyber Solutions</title>
+  <meta name="description" content="Get in touch with Phantom Cyber Solutions. No pitch decks, no discovery calls — just a real conversation about securing your digital presence.">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Phantom Cyber Solutions">
+  <meta property="og:title" content="Contact | Phantom Cyber Solutions">
+  <meta property="og:description" content="No pitch decks, no discovery calls — just a real conversation about securing your digital presence.">
+  <meta property="og:url" content="https://phantomcybersolutions.com/contact.html">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Contact | Phantom Cyber Solutions">
+  <meta name="twitter:description" content="No pitch decks, no discovery calls — just a real conversation about securing your digital presence.">
+  <link rel="canonical" href="https://phantomcybersolutions.com/contact.html">
+  <link rel="icon" href="./favicon.svg" type="image/svg+xml">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,300;0,400;0,500;0,700;1,400&family=Inter:wght@300;400;500;700;800&display=swap" rel="stylesheet">
@@ -54,8 +65,8 @@
 
       <!-- Contact Form -->
       <div>
-        <div class="panel" style="background:rgba(20,20,20,0.7);border:1px solid rgba(255,255,255,0.06);border-radius:6px;padding:2rem;">
-          <div class="panel-title" style="font-family:'JetBrains Mono',monospace;font-size:0.72rem;color:var(--lime-yellow);letter-spacing:2px;text-transform:uppercase;margin-bottom:1.5rem;padding-bottom:0.75rem;border-bottom:1px solid rgba(226,232,0,0.1);">Send a Message</div>
+        <div class="panel">
+          <div class="panel-title">Send a Message</div>
 
           <div class="form-group">
             <label>Name</label>
@@ -93,7 +104,7 @@
             <textarea id="c-message" rows="5" placeholder="Tell me about your project, your timeline, or what's keeping you up at night."></textarea>
           </div>
 
-          <p id="c-error" style="color:#f87171;font-family:'JetBrains Mono',monospace;font-size:0.78rem;margin-bottom:0.75rem;display:none;"></p>
+          <p id="c-error" class="form-error"></p>
 
           <button class="cta-button" id="c-submit" style="width:100%;">SEND MESSAGE &rarr;</button>
 
@@ -107,8 +118,8 @@
 
       <!-- Info Panel -->
       <div>
-        <div style="background:rgba(20,20,20,0.7);border:1px solid rgba(255,255,255,0.06);border-radius:6px;padding:2rem;margin-bottom:1.5rem;">
-          <div style="font-family:'JetBrains Mono',monospace;font-size:0.72rem;color:var(--lime-yellow);letter-spacing:2px;text-transform:uppercase;margin-bottom:1.5rem;padding-bottom:0.75rem;border-bottom:1px solid rgba(226,232,0,0.1);">Direct Lines</div>
+        <div class="dark-panel" style="margin-bottom:1.5rem;">
+          <div class="panel-title">Direct Lines</div>
 
           <div class="contact-info-item">
             <span class="contact-info-label">Response Time</span>
@@ -120,28 +131,28 @@
           </div>
         </div>
 
-        <div style="background:rgba(226,232,0,0.03);border:1px solid rgba(226,232,0,0.1);border-radius:6px;padding:1.75rem;">
-          <div style="font-family:'JetBrains Mono',monospace;font-size:0.7rem;color:rgba(226,232,0,0.5);letter-spacing:2px;text-transform:uppercase;margin-bottom:1rem;">Process</div>
-          <div style="display:flex;flex-direction:column;gap:0.85rem;">
-            <div style="display:flex;gap:1rem;align-items:flex-start;">
-              <span style="font-family:'JetBrains Mono',monospace;color:var(--lime-yellow);font-size:0.75rem;flex-shrink:0;margin-top:2px;">01</span>
+        <div class="accent-panel">
+          <div class="accent-panel-label">Process</div>
+          <div class="process-list">
+            <div class="process-step">
+              <span class="process-step-num">01</span>
               <div>
-                <div style="color:var(--white);font-weight:600;font-size:0.88rem;">You reach out</div>
-                <div style="color:var(--medium-gray);font-size:0.8rem;">Tell me what you need. No commitment required.</div>
+                <div class="process-step-title">You reach out</div>
+                <div class="process-step-desc">Tell me what you need. No commitment required.</div>
               </div>
             </div>
-            <div style="display:flex;gap:1rem;align-items:flex-start;">
-              <span style="font-family:'JetBrains Mono',monospace;color:var(--lime-yellow);font-size:0.75rem;flex-shrink:0;margin-top:2px;">02</span>
+            <div class="process-step">
+              <span class="process-step-num">02</span>
               <div>
-                <div style="color:var(--white);font-weight:600;font-size:0.88rem;">I scope the work</div>
-                <div style="color:var(--medium-gray);font-size:0.8rem;">Clear deliverables, timeline, and pricing. No surprises.</div>
+                <div class="process-step-title">I scope the work</div>
+                <div class="process-step-desc">Clear deliverables, timeline, and pricing. No surprises.</div>
               </div>
             </div>
-            <div style="display:flex;gap:1rem;align-items:flex-start;">
-              <span style="font-family:'JetBrains Mono',monospace;color:var(--lime-yellow);font-size:0.75rem;flex-shrink:0;margin-top:2px;">03</span>
+            <div class="process-step">
+              <span class="process-step-num">03</span>
               <div>
-                <div style="color:var(--white);font-weight:600;font-size:0.88rem;">We build</div>
-                <div style="color:var(--medium-gray);font-size:0.8rem;">You stay in the loop. I ship it right the first time.</div>
+                <div class="process-step-title">We build</div>
+                <div class="process-step-desc">You stay in the loop. I ship it right the first time.</div>
               </div>
             </div>
           </div>
@@ -176,6 +187,7 @@
     </div>
     <div class="footer-bottom">
       <p class="mono">&copy; 2026 Phantom Cyber Solutions &mdash; All rights reserved. // Stay vigilant.</p>
+      <p class="mono" style="margin-top:0.5rem;font-size:0.7rem;opacity:0.5;"><a href="privacy.html" style="color:inherit;">Privacy Policy</a></p>
     </div>
   </footer>
 
