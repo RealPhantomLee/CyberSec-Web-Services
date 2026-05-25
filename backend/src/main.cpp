@@ -30,7 +30,10 @@ static const std::string PUBLIC_ROOT = "public/";
 
 // ── Session store ─────────────────────────────────────────────────────────────
 
-struct Session { std::chrono::steady_clock::time_point expires; };
+struct Session {
+    std::chrono::steady_clock::time_point expires;
+    bool is_publisher = false;
+};
 static std::mutex                              session_mtx;
 static std::unordered_map<std::string,Session> sessions;
 static int SESSION_SECONDS = 90;
@@ -44,13 +47,13 @@ static std::string generate_token() {
     return hex;
 }
 
-static std::string create_session() {
+static std::string create_session(bool publisher = false) {
     std::lock_guard<std::mutex> lk(session_mtx);
     auto now = std::chrono::steady_clock::now();
     for (auto it = sessions.begin(); it != sessions.end();)
         it = (it->second.expires < now) ? sessions.erase(it) : ++it;
     std::string tok = generate_token();
-    sessions[tok] = { now + std::chrono::seconds(SESSION_SECONDS) };
+    sessions[tok] = { now + std::chrono::seconds(SESSION_SECONDS), publisher };
     return tok;
 }
 
@@ -85,7 +88,23 @@ static std::string get_cookie(const Request& req, const std::string& name) {
     return hdr.substr(pos, end == std::string::npos ? end : end - pos);
 }
 
+static bool validate_admin_session(const std::string& tok) {
+    if (tok.empty()) return false;
+    std::lock_guard<std::mutex> lk(session_mtx);
+    auto it = sessions.find(tok);
+    if (it == sessions.end()) return false;
+    if (it->second.expires < std::chrono::steady_clock::now()) {
+        sessions.erase(it);
+        return false;
+    }
+    return !it->second.is_publisher;
+}
+
 static bool check_auth(const Request& req) {
+    return validate_admin_session(get_cookie(req, "admin_session"));
+}
+
+static bool check_blog_auth(const Request& req) {
     return validate_session(get_cookie(req, "admin_session"));
 }
 
@@ -305,6 +324,8 @@ int main() {
     SmtpConfig smtp      = load_smtp(config);
     std::string adm_user = config["admin"].value("username",      "admin");
     std::string adm_hash = config["admin"].value("password_hash", "");
+    std::string pub_user = config.value("publisher", json::object()).value("username",      "");
+    std::string pub_hash = config.value("publisher", json::object()).value("password_hash", "");
     int         port     = config["site"].value("port",           8080);
 
     std::string contacts_path  = DATA_ROOT + "contacts.json";
@@ -433,6 +454,31 @@ int main() {
         json_ok(res, {{"success", true}});
     });
 
+    // ── POST /api/publisher/login ─────────────────────────────────────────────
+    svr.Post("/api/publisher/login", [&](const Request& req, Response& res) {
+        if (pub_user.empty() || pub_hash.empty())
+            return json_err(res, 503, "Publisher account not configured.");
+        if (is_rate_limited(client_ip(req), login_rate, 5, 900)) {
+            res.set_header("Retry-After", "900");
+            return json_err(res, 429, "Too many attempts. Try again in 15 minutes.");
+        }
+        json body;
+        try { body = json::parse(req.body); }
+        catch (...) { return json_err(res, 400, "Invalid request body."); }
+        if (body.value("username","") == pub_user &&
+            verify_password(body.value("password",""), pub_hash))
+        {
+            std::string tok = create_session(true);
+            res.set_header("Set-Cookie",
+                "admin_session=" + tok
+                + "; Path=/; Max-Age=" + std::to_string(SESSION_SECONDS)
+                + "; SameSite=Strict; HttpOnly; Secure");
+            json_ok(res, {{"success", true}});
+        } else {
+            json_err(res, 401, "Invalid credentials.");
+        }
+    });
+
     // ── GET /api/admin/contacts ───────────────────────────────────────────────
     svr.Get("/api/admin/contacts", [&](const Request& req, Response& res) {
         if (!check_auth(req)) return json_err(res, 403, "Unauthorized");
@@ -456,7 +502,7 @@ int main() {
 
     // ── POST /api/admin/blog ──────────────────────────────────────────────────
     svr.Post("/api/admin/blog", [&](const Request& req, Response& res) {
-        if (!check_auth(req)) return json_err(res, 403, "Unauthorized");
+        if (!check_blog_auth(req)) return json_err(res, 403, "Unauthorized");
         json body;
         try { body = json::parse(req.body); }
         catch (...) { return json_err(res, 400, "Invalid request body."); }
