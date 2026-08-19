@@ -47,6 +47,11 @@ target_link_libraries(cybersec-server PRIVATE
 add_custom_command(TARGET cybersec-server POST_BUILD
   COMMAND ${CMAKE_COMMAND} -E copy_directory
     ${CMAKE_SOURCE_DIR}/../data    ${CMAKE_BINARY_DIR}/data
+  COMMAND ${CMAKE_COMMAND} -E remove
+    ${CMAKE_BINARY_DIR}/data/blog.json
+  COMMAND ${CMAKE_COMMAND} -E create_symlink
+    ${CMAKE_SOURCE_DIR}/../data/blog.json
+    ${CMAKE_BINARY_DIR}/data/blog.json
   COMMAND ${CMAKE_COMMAND} -E copy_directory
     ${CMAKE_SOURCE_DIR}/../frontend/public ${CMAKE_BINARY_DIR}/public
   COMMENT "Copying data and public assets to build directory"

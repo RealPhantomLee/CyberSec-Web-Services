@@ -1,0 +1,9 @@
+{
+  "accepting_clients": true,
+  "announcement_enabled": false,
+  "announcement_text": "",
+  "comments_enabled": true,
+  "contact_email": "",
+  "contact_response": "",
+  "maintenance_mode": false
+}

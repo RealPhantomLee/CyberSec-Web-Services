@@ -1,13 +1,8 @@
 {
   "posts": [
     {
-      "id": "welcome-post",
-      "title": "Welcome to CyberSec Web Services",
-      "date": "2026-04-30",
       "author": "admin",
       "category": "announcement",
-      "tags": ["welcome", "cybersecurity", "web development"],
-      "excerpt": "We're excited to launch our cybersecurity and web development services.",
       "content": "Full blog post content goes here. This is a sample post to demonstrate the blog functionality.",
       "published": true
     },
@@ -46,8 +41,8 @@
     }
   ],
   "settings": {
-    "posts_per_page": 10,
+    "admin_only_posting": true,
     "allow_comments": false,
-    "admin_only_posting": true
+    "posts_per_page": 10
   }
 }

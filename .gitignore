@@ -26,3 +26,12 @@ Thumbs.db
 *~
 .vscode/
 .idea/
+
+# Claude Code local settings (machine-specific, not project source)
+.claude/
+
+# Vendored dependency with its own nested .git — avoid broken gitlink
+dependencies/
+
+# Graphify generated output (build artifact, not source)
+graphify-out/
